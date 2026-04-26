@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm Bài Thi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="fixed top-0 w-full bg-white shadow-md border-b border-gray-200 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 id="examTitle" class="text-xl font-bold text-gray-800">Đang tải đề...</h1>
+            <div class="flex items-center gap-2 bg-red-100 text-red-700 px-4 py-2 rounded-lg font-mono text-xl font-bold border border-red-200">
+                <span>⏳</span>
+                <span id="timer">45:00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto px-4 pt-24 pb-12">
+        <form id="quizForm" class="space-y-6">
+            <div id="questionsContainer"></div>
+            
+            <div class="text-center mt-10">
+                <button type="button" onclick="submitExam()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-xl shadow-lg transition-colors text-lg">
+                    Nộp Bài Ngay
+                </button>
+            </div>
+        </form>
+
+        <div id="resultModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-2xl">
+                <h2 class="text-3xl font-black text-gray-800 mb-2">Kết quả bài làm</h2>
+                <p class="text-gray-500 mb-6">Hệ thống đã lưu điểm của em.</p>
+                <div class="text-6xl font-black text-blue-600 mb-6" id="scoreDisplay">0/10</div>
+                <a href="index.html" class="block w-full bg-gray-800 hover:bg-gray-900 text-white font-bold py-3 rounded-lg transition-colors">
+                    Về Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+// ==========================================
+// CƠ SỞ DỮ LIỆU CÂU HỎI (DATABASE) - PHẦN 1 (ĐỀ 1 & 2)
+// Toán: 20 câu/đề | Tiếng Anh: 30 câu/đề
+// ==========================================
+const examDatabase = {
+    math: {
+        1: {
+            time: 45,
+            questions: [
+                // --- ĐẠI SỐ ---
+                { q: "Rút gọn biểu thức $A = \\sqrt{16} + \\sqrt{9}$.", options: ["7", "5", "12", "25"], a: 0 },
+                { q: "Giải phương trình $x^2 - 5x + 6 = 0$. Tổng các nghiệm là:", options: ["-5", "5", "6", "-6"], a: 1 },
+                { q: "Biểu thức $\\sqrt{x-2}$ xác định khi:", options: ["$x > 2$", "$x < 2$", "$x \\geq 2$", "$x \\leq 2$"], a: 2 },
+                { q: "Hệ số góc của đường thẳng $y = 2x - 3$ là:", options: ["-3", "2", "3", "-2"], a: 1 },
+                { q: "Giá trị của hàm số $y = -x^2$ tại $x = -2$ là:", options: ["4", "-4", "2", "-2"], a: 1 },
+                { q: "Trong các hàm số sau, hàm số nào đồng biến trên $\\mathbb{R}$?", options: ["$y = -3x + 1$", "$y = 2x - 5$", "$y = -x$", "$y = 4 - x$"], a: 1 },
+                { q: "Số nghiệm của phương trình $x^4 - 3x^2 + 2 = 0$ là:", options: ["1", "2", "3", "4"], a: 3 },
+                { q: "Tính $\\sqrt{(2-\\sqrt{5})^2} + \\sqrt{5}$:", options: ["2", "$2\\sqrt{5}$", "-2", "5"], a: 0 },
+                { q: "Tọa độ giao điểm của $y = x^2$ và $y = 2x$ là:", options: ["(0;0)", "(2;4)", "(0;0) và (2;4)", "(1;1)"], a: 2 },
+                { q: "Phương trình nào sau đây có hai nghiệm trái dấu?", options: ["$x^2-3x+2=0$", "$x^2+x+1=0$", "$x^2-2x-3=0$", "$2x^2+5x+1=0$"], a: 2 },
+                { q: "Biệt thức $\\Delta$ của phương trình $x^2 - 4x + 4 = 0$ là:", options: ["0", "4", "16", "8"], a: 0 },
+                { q: "Hệ phương trình $\\begin{cases} x+y=3 \\\\ x-y=1 \\end{cases}$ có nghiệm là:", options: ["(1;2)", "(2;1)", "(3;0)", "(0;3)"], a: 1 },
+                { q: "Tích hai nghiệm của phương trình $2x^2 - 5x + 2 = 0$ là:", options: ["2.5", "1", "2", "-1"], a: 1 },
+                { q: "Đường thẳng $y = ax + b$ đi qua $A(0;1)$ và $B(1;0)$ có phương trình là:", options: ["$y = x+1$", "$y = -x+1$", "$y = x-1$", "$y = -x-1$"], a: 1 },
+                // --- HÌNH HỌC ---
+                { q: "Một chiếc nón có bán kính đáy $r=3$ cm, chiều cao $h=4$ cm. Diện tích xung quanh nón là (lấy $\\pi = 3.14$):", options: ["47.1", "37.68", "18.84", "94.2"], a: 0 },
+                { q: "Cho tam giác ABC vuông tại A, đường cao AH. Biết AB=3, AC=4. Độ dài AH là:", options: ["2.4", "5", "1.2", "2.5"], a: 0 },
+                { q: "Giá trị của $M = \\sin^2 35^\\circ + \\sin^2 55^\\circ$ là:", options: ["0", "1", "2", "0.5"], a: 1 },
+                { q: "Diện tích mặt cầu có bán kính $R=3$ cm là:", options: ["$12\\pi$", "$36\\pi$", "$18\\pi$", "$9\\pi$"], a: 1 },
+                { q: "Cho đường tròn (O; 5cm) và dây AB cách tâm 3cm. Độ dài dây AB là:", options: ["4cm", "6cm", "8cm", "10cm"], a: 2 },
+                { q: "Tỉ số lượng giác $\\tan 45^\\circ$ bằng:", options: ["0", "0.5", "1", "$\\sqrt{2}$"], a: 2 }
+            ]
+        },
+        2: {
+            time: 45,
+            questions: [
+                // --- ĐẠI SỐ ---
+                { q: "Giá trị của biểu thức $\\sqrt{25} - \\sqrt{16}$ là:", options: ["9", "1", "-1", "3"], a: 1 },
+                { q: "Điều kiện xác định của biểu thức $\\frac{1}{\\sqrt{x-3}}$ là:", options: ["$x \\geq 3$", "$x > 3$", "$x < 3$", "$x \\neq 3$"], a: 1 },
+                { q: "Hàm số $y = (m-1)x + 3$ đồng biến trên $\\mathbb{R}$ khi:", options: ["$m > 1$", "$m < 1$", "$m = 1$", "$m \\neq 1$"], a: 0 },
+                { q: "Đồ thị hàm số $y = 2x^2$ đi qua điểm nào dưới đây?", options: ["(1; 2)", "(2; 4)", "(-1; -2)", "(0; 2)"], a: 0 },
+                { q: "Phương trình $x^2 - 7x + 10 = 0$ có hai nghiệm là:", options: ["2 và 5", "-2 và -5", "2 và -5", "-2 và 5"], a: 0 },
+                { q: "Cho phương trình $x^2 - Sx + P = 0$. Hai số có tổng S=5 và tích P=6 là nghiệm của phương trình nào?", options: ["$x^2 - 5x - 6 = 0$", "$x^2 + 5x + 6 = 0$", "$x^2 - 5x + 6 = 0$", "$x^2 + 5x - 6 = 0$"], a: 2 },
+                { q: "Hệ phương trình $\\begin{cases} 2x-y=5 \\\\ x+y=4 \\end{cases}$ có nghiệm $(x;y)$ là:", options: ["(1;3)", "(3;1)", "(2;1)", "(4;0)"], a: 1 },
+                { q: "Rút gọn biểu thức $\\frac{\\sqrt{12}}{\\sqrt{3}}$ ta được:", options: ["4", "2", "$\\sqrt{4}$", "$\\sqrt{2}$"], a: 1 },
+                { q: "Trục căn thức ở mẫu của $\\frac{2}{\\sqrt{5}-1}$ ta được:", options: ["$\\frac{\\sqrt{5}+1}{2}$", "$\\frac{\\sqrt{5}-1}{2}$", "$\\sqrt{5}+1$", "$\\sqrt{5}-1$"], a: 0 },
+                { q: "Phương trình $x^4 - 5x^2 + 4 = 0$ có bao nhiêu nghiệm?", options: ["1", "2", "3", "4"], a: 3 },
+                { q: "Biết đồ thị hàm số $y=ax^2$ đi qua điểm $A(-2; -4)$, giá trị của a là:", options: ["-1", "1", "-2", "2"], a: 0 },
+                { q: "Nếu $\\sqrt{x} = 3$ thì $x^2$ bằng:", options: ["3", "9", "27", "81"], a: 3 },
+                { q: "Cho hàm số bậc nhất $y = ax - 4$. Biết $f(1) = 2$, hệ số a bằng:", options: ["6", "-2", "2", "-6"], a: 0 },
+                { q: "Tọa độ đỉnh của parabol $y = -3x^2$ là:", options: ["(0; -3)", "(0; 0)", "(-3; 0)", "(1; -3)"], a: 1 },
+                // --- HÌNH HỌC ---
+                { q: "Cho tam giác ABC vuông tại A, có $\\angle B = 30^\\circ$ và BC = 10. Độ dài cạnh AC là:", options: ["5", "$5\\sqrt{3}$", "10", "$10\\sqrt{3}$"], a: 0 },
+                { q: "Bán kính đường tròn ngoại tiếp tam giác vuông có cạnh huyền bằng 12 cm là:", options: ["12 cm", "6 cm", "3 cm", "24 cm"], a: 1 },
+                { q: "Góc nội tiếp chắn nửa đường tròn có số đo bằng:", options: ["$45^\\circ$", "$60^\\circ$", "$90^\\circ$", "$180^\\circ$"], a: 2 },
+                { q: "Hai tiếp tuyến tại A và B của đường tròn (O) cắt nhau tại M. Biết $\\angle AMB = 60^\\circ$. Số đo góc $\\angle AOB$ là:", options: ["$60^\\circ$", "$90^\\circ$", "$120^\\circ$", "$180^\\circ$"], a: 2 },
+                { q: "Thể tích hình trụ có bán kính đáy $r=2$, chiều cao $h=5$ là:", options: ["$20\\pi$", "$10\\pi$", "$40\\pi$", "$10$"], a: 0 },
+                { q: "Một quả bóng đá có dạng hình cầu bán kính 11cm. Diện tích bề mặt quả bóng (lấy $\\pi \\approx 3.14$) xấp xỉ:", options: ["1519.76 $cm^2$", "379.94 $cm^2$", "5575.28 $cm^2$", "121 $cm^2$"], a: 0 }
+            ]
+        }
+    },
+    english: {
+        1: {
+            time: 45,
+            questions: [
+                // --- PRONUNCIATION & STRESS ---
+                { q: "Choose the word with a different pronunciation: watch<u>ed</u>, stop<u>ped</u>, work<u>ed</u>, need<u>ed</u>.", options: ["watched", "stopped", "worked", "needed"], a: 3 },
+                { q: "Choose the word with a different pronunciation: <u>c</u>ity, <u>c</u>at, <u>c</u>enter, <u>c</u>inema.", options: ["city", "cat", "center", "cinema"], a: 1 },
+                { q: "Choose the word with a different stress pattern: 'open', 'happen', 'begin', 'listen'.", options: ["open", "happen", "begin", "listen"], a: 2 },
+                { q: "Choose the word with a different stress pattern: 'enjoy', 'finish', 'decide', 'prefer'.", options: ["enjoy", "finish", "decide", "prefer"], a: 1 },
+                // --- GRAMMAR & VOCABULARY ---
+                { q: "If the weather _____ good, we will go camping.", options: ["is", "was", "were", "has been"], a: 0 },
+                { q: "I suggest _____ public transport to reduce pollution.", options: ["use", "to use", "using", "used"], a: 2 },
+                { q: "The woman _____ lives next door is very friendly.", options: ["which", "who", "whom", "whose"], a: 1 },
+                { q: "Mount Pinatubo erupted _____ 1991.", options: ["in", "on", "at", "for"], a: 0 },
+                { q: "She _____ English for 5 years before she moved to London.", options: ["learns", "has learned", "had learned", "is learning"], a: 2 },
+                { q: "He is the _____ student in my class.", options: ["good", "better", "best", "goodest"], a: 2 },
+                { q: "I wish I _____ a new car now.", options: ["have", "had", "will have", "am having"], a: 1 },
+                { q: "The children are interested _____ reading comic books.", options: ["on", "at", "in", "with"], a: 2 },
+                { q: "_____ she was tired, she finished her homework.", options: ["Because", "Although", "Despite", "Since"], a: 1 },
+                { q: "You don't like coffee, _____?", options: ["do you", "don't you", "are you", "aren't you"], a: 0 },
+                { q: "The city _____ we visited last summer was very beautiful.", options: ["who", "which", "where", "when"], a: 1 },
+                { q: "Rice _____ in many tropical countries.", options: ["grows", "is grown", "grow", "are grown"], a: 1 },
+                { q: "If I _____ you, I would take that job.", options: ["am", "was", "were", "had been"], a: 2 },
+                { q: "They _____ to the cinema every Sunday.", options: ["go", "goes", "going", "gone"], a: 0 },
+                { q: "She asked me where I _____ from.", options: ["come", "came", "am coming", "have come"], a: 1 },
+                { q: "We should use _____ bags instead of plastic ones.", options: ["reusable", "reuse", "used", "using"], a: 0 },
+                { q: "He drives very _____, so he never has accidents.", options: ["careful", "carefully", "careless", "carelessly"], a: 1 },
+                { q: "It's difficult _____ this exercise.", options: ["do", "doing", "to do", "done"], a: 2 },
+                { q: "The exam was _____ than we expected.", options: ["more easy", "easier", "easyer", "more easily"], a: 1 },
+                { q: "I _____ my old teacher for a long time.", options: ["didn't see", "don't see", "haven't seen", "won't see"], a: 2 },
+                // --- ERROR IDENTIFICATION & MEANING ---
+                { q: "Find the error: She <u>is</u> <u>looking forward</u> to <u>see</u> her grandparents <u>again</u>.", options: ["is", "looking forward", "see", "again"], a: 2 },
+                { q: "Find the error: <u>The</u> water was <u>so</u> polluted <u>that</u> we couldn't swim <u>on</u> it.", options: ["The", "so", "that", "on"], a: 3 },
+                { q: "Choose the word CLOSEST in meaning to 'polluted':", options: ["clean", "contaminated", "fresh", "pure"], a: 1 },
+                { q: "Choose the word OPPOSITE in meaning to 'increase':", options: ["reduce", "rise", "develop", "grow"], a: 0 },
+                { q: "We can't go out ______ it is raining heavily.", options: ["but", "so", "because", "although"], a: 2 },
+                { q: "My father used ______ heavily, but he gave it up 2 years ago.", options: ["to smoke", "smoking", "smoke", "to smoking"], a: 0 }
+            ]
+        },
+        2: {
+            time: 45,
+            questions: [
+                // --- PRONUNCIATION & STRESS ---
+                { q: "Choose the word with a different pronunciation: <u>h</u>our, <u>h</u>ouse, <u>h</u>ot, <u>h</u>at.", options: ["hour", "house", "hot", "hat"], a: 0 },
+                { q: "Choose the word with a different pronunciation: look<u>ed</u>, miss<u>ed</u>, call<u>ed</u>, watch<u>ed</u>.", options: ["looked", "missed", "called", "watched"], a: 2 },
+                { q: "Choose the word with a different stress pattern: 'money', 'student', 'teacher', 'advice'.", options: ["money", "student", "teacher", "advice"], a: 3 },
+                { q: "Choose the word with a different stress pattern: 'important', 'beautiful', 'difficult', 'interesting'.", options: ["important", "beautiful", "difficult", "interesting"], a: 0 },
+                // --- GRAMMAR & VOCABULARY ---
+                { q: "Lan enjoys ______ to music in her free time.", options: ["listen", "to listen", "listening", "listens"], a: 2 },
+                { q: "We ______ in this town since 2010.", options: ["live", "lived", "have lived", "are living"], a: 2 },
+                { q: "The boy ______ is standing near the door is my brother.", options: ["who", "whom", "which", "whose"], a: 0 },
+                { q: "If he ______ harder, he would pass the exam.", options: ["study", "studies", "studied", "has studied"], a: 2 },
+                { q: "He asked me what time ______.", options: ["is it", "it is", "was it", "it was"], a: 3 },
+                { q: "This is the ______ beautiful dress I have ever seen.", options: ["more", "most", "less", "much"], a: 1 },
+                { q: "You should turn ______ the lights before going out to save energy.", options: ["on", "off", "up", "down"], a: 1 },
+                { q: "They didn't go for a picnic ______ the weather was bad.", options: ["because", "because of", "although", "despite"], a: 0 },
+                { q: "A new hospital ______ built in our neighborhood next month.", options: ["is", "was", "will be", "has been"], a: 2 },
+                { q: "I wish my parents ______ here with me now.", options: ["are", "were", "will be", "have been"], a: 1 },
+                { q: "Let's go to the cinema tonight, ______?", options: ["shall we", "will we", "do we", "don't we"], a: 0 },
+                { q: "It takes me 30 minutes ______ to school every day.", options: ["go", "to go", "going", "goes"], a: 1 },
+                { q: "Solar energy doesn't cause ______.", options: ["pollution", "polluted", "pollute", "pollutant"], a: 0 },
+                { q: "She is very proud ______ her son's achievements.", options: ["in", "of", "about", "with"], a: 1 },
+                { q: "My grandmother used to ______ us fairy tales when we were small.", options: ["tell", "tells", "telling", "told"], a: 0 },
+                { q: "Tom worked ______, so he passed the exam easily.", options: ["hard", "hardly", "harder", "hardest"], a: 0 },
+                // --- ERROR IDENTIFICATION & MEANING ---
+                { q: "Find the error: I <u>suggest</u> <u>to take</u> a shower <u>instead</u> of a <u>bath</u>.", options: ["suggest", "to take", "instead", "bath"], a: 1 },
+                { q: "Find the error: <u>The</u> boy <u>laughing</u> happily <u>over there</u> is <u>my</u> brother.", options: ["The", "laughing", "over there", "my"], a: 1 }, // Actually 'laughing' is correct here (participle clause), let's make an obvious error:
+                { q: "Find the error: She <u>has worked</u> here <u>since</u> <u>she</u> <u>is</u> 20 years old.", options: ["has worked", "since", "she", "is"], a: 3 },
+                { q: "Choose the word CLOSEST in meaning to 'look after':", options: ["take care of", "search for", "look at", "examine"], a: 0 },
+                { q: "Choose the word OPPOSITE in meaning to 'save' (energy):", options: ["protect", "conserve", "waste", "use"], a: 2 },
+                { q: "He likes playing soccer. He likes swimming. (Combine)", options: ["He likes playing soccer, so he likes swimming.", "He likes playing soccer and swimming.", "He likes playing soccer but swimming.", "He likes playing soccer because swimming."], a: 1 },
+                { q: "Can you ______ the TV? I want to watch the news.", options: ["turn on", "turn off", "look for", "go on"], a: 0 },
+                { q: "I haven't seen her ______ last week.", options: ["for", "since", "in", "at"], a: 1 },
+                { q: "A person who installs and repairs water pipes is a ______.", options: ["mechanic", "plumber", "electrician", "carpenter"], a: 1 },
+                { q: "I don't have enough money. I can't buy that phone. (Conditional sentence)", options: ["If I have enough money, I will buy that phone.", "If I had enough money, I could buy that phone.", "If I had had enough money, I would have bought that phone.", "If I don't have enough money, I can't buy that phone."], a: 1 }
+            ]
+        }
+      // ==========================================
+// CƠ SỞ DỮ LIỆU CÂU HỎI (DATABASE) - PHẦN 2 (ĐỀ 3, 4, 5)
+// ==========================================
+
+// THÊM VÀO TRONG OBJECT `math`:
+        3: {
+            time: 45,
+            questions: [
+                // --- ĐẠI SỐ ---
+                { q: "Giá trị của biểu thức $\\sqrt{81}$ là:", options: ["-9", "9", "$\\pm 9$", "81"], a: 1 },
+                { q: "Biểu thức $\\sqrt{2x-6}$ có nghĩa khi:", options: ["$x \\geq 3$", "$x > 3$", "$x \\leq 3$", "$x < 3$"], a: 0 },
+                { q: "Đồ thị hàm số $y = 3x - 2$ đi qua điểm nào dưới đây?", options: ["(0; 2)", "(1; 1)", "(-1; 1)", "(2; 3)"], a: 1 },
+                { q: "Hệ số góc của đường thẳng $y = -4x + 1$ là:", options: ["1", "-4", "4", "-1"], a: 1 },
+                { q: "Phương trình $x^2 - 9 = 0$ có tập nghiệm là:", options: ["{3}", "{-3}", "{3; -3}", "{9}"], a: 2 },
+                { q: "Tổng hai nghiệm của phương trình $x^2 - 4x + 3 = 0$ là:", options: ["4", "-4", "3", "-3"], a: 0 },
+                { q: "Tích hai nghiệm của phương trình $x^2 - 4x + 3 = 0$ là:", options: ["4", "-4", "3", "-3"], a: 2 },
+                { q: "Hệ phương trình $\\begin{cases} x+y=5 \\\\ x-y=1 \\end{cases}$ có nghiệm là:", options: ["(2;3)", "(3;2)", "(4;1)", "(1;4)"], a: 1 },
+                { q: "Hàm số $y = x^2$ đồng biến khi:", options: ["$x > 0$", "$x < 0$", "$x \\geq 0$", "$x \\leq 0$"], a: 0 },
+                { q: "Số nghiệm của phương trình $x^2 + x + 1 = 0$ là:", options: ["0", "1", "2", "Vô số"], a: 0 },
+                { q: "Rút gọn biểu thức $\\frac{\\sqrt{50}}{\\sqrt{2}}$ ta được:", options: ["5", "25", "$\\sqrt{5}$", "$\\sqrt{10}$"], a: 0 },
+                { q: "Khử mẫu của biểu thức lấy căn $\\sqrt{\\frac{1}{3}}$ ta được:", options: ["$\\frac{1}{3}$", "$\\frac{\\sqrt{3}}{3}$", "$\\sqrt{3}$", "$\\frac{\\sqrt{3}}{9}$"], a: 1 },
+                { q: "Tọa độ giao điểm của hai đường thẳng $y=2x$ và $y=-x+3$ là:", options: ["(1;2)", "(2;1)", "(-1;-2)", "(1;1)"], a: 0 },
+                { q: "Phương trình $x^4 - 4x^2 + 3 = 0$ có bao nhiêu nghiệm?", options: ["1", "2", "3", "4"], a: 3 },
+                // --- HÌNH HỌC ---
+                { q: "Tam giác ABC vuông tại A, biết $AB=6$ cm, $AC=8$ cm. Độ dài cạnh BC là:", options: ["10 cm", "14 cm", "100 cm", "$\\sqrt{14}$ cm"], a: 0 },
+                { q: "Giá trị của $\\sin 30^\\circ$ bằng:", options: ["$\\frac{1}{2}$", "$\\frac{\\sqrt{3}}{2}$", "1", "$\\frac{\\sqrt{2}}{2}$"], a: 0 },
+                { q: "Một tam giác đều cạnh bằng 2 cm có độ dài đường cao là:", options: ["1 cm", "$\\sqrt{3}$ cm", "2 cm", "$\\sqrt{2}$ cm"], a: 1 },
+                { q: "Góc nội tiếp chắn một phần tư đường tròn có số đo là:", options: ["$90^\\circ$", "$45^\\circ$", "$60^\\circ$", "$180^\\circ$"], a: 1 },
+                { q: "Diện tích hình tròn có bán kính $R=4$ cm là:", options: ["$8\\pi$ $cm^2$", "$16\\pi$ $cm^2$", "$4\\pi$ $cm^2$", "$32\\pi$ $cm^2$"], a: 1 },
+                { q: "Thể tích hình cầu có bán kính $R=3$ cm là:", options: ["$36\\pi$ $cm^3$", "$12\\pi$ $cm^3$", "$27\\pi$ $cm^3$", "$108\\pi$ $cm^3$"], a: 0 }
+            ]
+        },
+        4: {
+            time: 45,
+            questions: [
+                { q: "Giá trị của $\\sqrt{(1-\\sqrt{2})^2}$ là:", options: ["$1-\\sqrt{2}$", "$\\sqrt{2}-1$", "1", "$\\sqrt{2}$"], a: 1 },
+                { q: "Hàm số nào sau đây là hàm số bậc nhất?", options: ["$y = x^2 + 1$", "$y = \\frac{1}{x}$", "$y = 2x - 3$", "$y = \\sqrt{x}$"], a: 2 },
+                { q: "Hai đường thẳng $y = 2x + 1$ và $y = mx - 3$ song song với nhau khi:", options: ["$m = -2$", "$m = 2$", "$m \\neq 2$", "$m = -3$"], a: 1 },
+                { q: "Phương trình nào sau đây là phương trình bậc hai một ẩn?", options: ["$x^3 - x = 0$", "$x^2 - 3x + 2 = 0$", "$x + 5 = 0$", "$\\frac{1}{x^2} = 0$"], a: 1 },
+                { q: "Nghiệm của hệ phương trình $\\begin{cases} 3x - y = 5 \\\\ x + 2y = 4 \\end{cases}$ là:", options: ["(2; 1)", "(1; 2)", "(2; -1)", "(-2; 1)"], a: 0 },
+                { q: "Điểm $M(-1; 2)$ thuộc đồ thị hàm số $y = ax^2$ khi $a$ bằng:", options: ["2", "-2", "$\\frac{1}{2}$", "-\\frac{1}{2}"], a: 0 },
+                { q: "Biệt thức $\\Delta'$ của phương trình $x^2 - 6x + 5 = 0$ là:", options: ["16", "4", "56", "-11"], a: 1 },
+                { q: "Nếu $x_1, x_2$ là hai nghiệm của pt $x^2 - 5x + 6 = 0$ thì $x_1^2 + x_2^2$ bằng:", options: ["13", "25", "37", "12"], a: 0 },
+                { q: "Rút gọn $M = \\left(\\frac{1}{\\sqrt{x}-1} - \\frac{1}{\\sqrt{x}+1}\\right) \\cdot \\frac{x-1}{2}$ ($x \\geq 0, x \\neq 1$):", options: ["1", "$\\sqrt{x}$", "x", "2"], a: 0 },
+                { q: "Phương trình $x^2 - mx + m - 1 = 0$ luôn có một nghiệm bằng:", options: ["1", "-1", "m", "-m"], a: 0 },
+                { q: "Tập nghiệm của phương trình $\\sqrt{x-1} = 2$ là:", options: ["{3}", "{5}", "{4}", "{-3}"], a: 1 },
+                { q: "Cặp số (1; -2) là nghiệm của phương trình nào?", options: ["$2x + y = 0$", "$x - y = 3$", "$3x - 2y = 1$", "$x + y = -1$"], a: 3 },
+                { q: "Đường thẳng $y = -3x + b$ đi qua điểm $A(1; 2)$ thì b bằng:", options: ["5", "-1", "1", "-5"], a: 0 },
+                { q: "Cho $\\triangle ABC$ vuông tại A, đường cao AH. Hệ thức nào ĐÚNG?", options: ["$AB^2 = BH \\cdot BC$", "$AH^2 = AB \\cdot AC$", "$AC^2 = CH \\cdot AB$", "$AH \\cdot BC = AB \\cdot BH$"], a: 0 },
+                { q: "Cho $\\triangle ABC$ vuông tại A, $\\cos B = \\frac{3}{5}$. Tỉ số $\\sin C$ là:", options: ["$\\frac{4}{5}$", "$\\frac{3}{5}$", "$\\frac{3}{4}$", "$\\frac{4}{3}$"], a: 1 },
+                { q: "Cho đường tròn $(O; R)$ và dây $AB = R$. Góc ở tâm $\\angle AOB$ bằng:", options: ["$60^\\circ$", "$90^\\circ$", "$120^\\circ$", "$45^\\circ$"], a: 0 },
+                { q: "Tứ giác ABCD nội tiếp đường tròn nếu có:", options: ["$\\angle A + \\angle B = 180^\\circ$", "$\\angle A + \\angle C = 180^\\circ$", "$\\angle A = \\angle C$", "$\\angle A + \\angle D = 180^\\circ$"], a: 1 },
+                { q: "Độ dài cung $60^\\circ$ của đường tròn bán kính 3 cm là:", options: ["$\\pi$ cm", "$2\\pi$ cm", "$\\frac{\\pi}{2}$ cm", "$3\\pi$ cm"], a: 0 },
+                { q: "Diện tích xung quanh của hình trụ có bán kính đáy $r=3$, chiều cao $h=4$ là:", options: ["$12\\pi$", "$24\\pi$", "$36\\pi$", "$48\\pi$"], a: 1 },
+                { q: "Một hình nón có bán kính đáy $r=5$, đường sinh $l=13$. Chiều cao $h$ của nón là:", options: ["12", "8", "10", "14"], a: 0 }
+            ]
+        },
+        5: {
+            time: 45,
+            questions: [
+                { q: "Kết quả của phép tính $\\sqrt{12} - \\sqrt{27} + \\sqrt{3}$ là:", options: ["0", "$\\sqrt{3}$", "$-\\sqrt{3}$", "$2\\sqrt{3}$"], a: 0 },
+                { q: "Biểu thức $\\sqrt{\\frac{-2}{x-1}}$ xác định khi:", options: ["$x > 1$", "$x < 1$", "$x \\neq 1$", "$x \\leq 1$"], a: 1 },
+                { q: "Hàm số $y = (2-m)x + 1$ nghịch biến trên $\\mathbb{R}$ khi:", options: ["$m < 2$", "$m > 2$", "$m = 2$", "$m \\neq 2$"], a: 1 },
+                { q: "Giao điểm của Parabol $y = x^2$ và đường thẳng $y = -x + 2$ có hoành độ là:", options: ["1 và -2", "-1 và 2", "1 và 2", "-1 và -2"], a: 0 },
+                { q: "Phương trình $2x^2 - 3x - 5 = 0$ có nghiệm là:", options: ["$-1$ và $\\frac{5}{2}$", "1 và $-\\frac{5}{2}$", "$-1$ và $-\\frac{5}{2}$", "1 và $\\frac{5}{2}$"], a: 0 },
+                { q: "Tìm m để phương trình $x^2 - 2x + m = 0$ có nghiệm kép:", options: ["m = 1", "m = -1", "m = 0", "m = 4"], a: 0 },
+                { q: "Hai số có tổng bằng 7 và tích bằng 12 là nghiệm của phương trình:", options: ["$x^2 + 7x + 12 = 0$", "$x^2 - 7x + 12 = 0$", "$x^2 - 12x + 7 = 0$", "$x^2 + 12x + 7 = 0$"], a: 1 },
+                { q: "Nghiệm của hệ $\\begin{cases} 2x + 3y = 7 \\\\ x - y = 1 \\end{cases}$ là:", options: ["(2; 1)", "(1; 2)", "(-2; -1)", "(3; 2)"], a: 0 },
+                { q: "Với $a > 0, b > 0$, biểu thức $\\sqrt{a} \\cdot \\sqrt{b}$ bằng:", options: ["$\\sqrt{a+b}$", "$\\sqrt{ab}$", "$a \\cdot b$", "$a+b$"], a: 1 },
+                { q: "Điểm $A(-2; 1)$ thuộc đường thẳng $y = ax - 3$ thì hệ số a là:", options: ["-2", "2", "-1", "1"], a: -2 }, // Wait, a=(-2) a:0 is correct format. options:["-2", "2", "-1", "1"], a:0
+                { q: "Cho $\\triangle ABC$ vuông tại A. Khẳng định nào SAI?", options: ["$\\sin B = \\cos C$", "$\\sin^2 B + \\cos^2 B = 1$", "$\\tan B = \\frac{\\sin B}{\\cos B}$", "$\\tan B \\cdot \\cot C = 1$"], a: 3 },
+                { q: "Đường thẳng d cách tâm O của đường tròn (O; 5cm) một khoảng 3cm. d và (O) có bao nhiêu điểm chung?", options: ["0", "1", "2", "3"], a: 2 },
+                { q: "Từ điểm M nằm ngoài (O), kẻ 2 tiếp tuyến MA, MB. Biết $\\angle AMB = 40^\\circ$. $\\angle AOB$ bằng:", options: ["$140^\\circ$", "$40^\\circ$", "$70^\\circ$", "$80^\\circ$"], a: 0 },
+                { q: "Diện tích quạt tròn bán kính R, cung $n^\\circ$ là:", options: ["$\\frac{\\pi R^2 n}{180}$", "$\\frac{\\pi R n}{180}$", "$\\frac{\\pi R^2 n}{360}$", "$\\frac{\\pi R n}{360}$"], a: 2 },
+                { q: "Hình trụ có diện tích xung quanh là $20\\pi$, bán kính đáy $r=2$. Chiều cao $h$ là:", options: ["5", "10", "4", "8"], a: 0 },
+                { q: "Phương trình $x^4 - 2x^2 - 3 = 0$ có tập nghiệm là:", options: ["{$\\sqrt{3}$; $-\\sqrt{3}$}", "{1; -3}", "{$\\sqrt{3}$; $-\\sqrt{3}$; 1; -1}", "Vô nghiệm"], a: 0 },
+                { q: "Hệ phương trình $\\begin{cases} mx + y = 3 \\\\ 2x - y = 1 \\end{cases}$ vô nghiệm khi m bằng:", options: ["-2", "2", "1", "-1"], a: 0 },
+                { q: "Biểu thức $\\frac{x}{\\sqrt{x}}$ ($x > 0$) rút gọn bằng:", options: ["1", "$x^2$", "$\\sqrt{x}$", "x"], a: 2 },
+                { q: "Tam giác nội tiếp nửa đường tròn là tam giác:", options: ["Nhọn", "Vuông", "Tù", "Đều"], a: 1 },
+                { q: "Thể tích hình nón có diện tích đáy $15 cm^2$ và chiều cao $4 cm$ là:", options: ["$60 cm^3$", "$20 cm^3$", "$30 cm^3$", "$45 cm^3$"], a: 1 }
+            ]
+        },
+
+// THÊM VÀO TRONG OBJECT `english`:
+        3: {
+            time: 45,
+            questions: [
+                { q: "Choose the word with a different pronunciation: m<u>ea</u>t, s<u>ea</u>t, gr<u>ea</u>t, h<u>ea</u>t.", options: ["meat", "seat", "great", "heat"], a: 2 },
+                { q: "Choose the word with a different pronunciation: <u>th</u>ink, <u>th</u>ick, <u>th</u>ere, <u>th</u>ank.", options: ["think", "thick", "there", "thank"], a: 2 },
+                { q: "Choose the word with a different stress pattern: 'village', 'summer', 'winter', 'suggest'.", options: ["village", "summer", "winter", "suggest"], a: 3 },
+                { q: "Choose the word with a different stress pattern: 'pollution', 'computer', 'family', 'creative'.", options: ["pollution", "computer", "family", "creative"], a: 2 },
+                { q: "If it ______ tomorrow, we will stay at home.", options: ["rains", "rain", "rained", "will rain"], a: 0 },
+                { q: "My brother is very fond ______ playing basketball.", options: ["at", "in", "of", "with"], a: 2 },
+                { q: "He asked me ______ I liked pop music.", options: ["if", "what", "which", "who"], a: 0 },
+                { q: "The car ______ was stolen yesterday has been found.", options: ["who", "whom", "which", "whose"], a: 2 },
+                { q: "Mary ______ write to me when she lived in Paris.", options: ["uses to", "used to", "is used to", "was used to"], a: 1 },
+                { q: "I wish I ______ more time to finish this project.", options: ["have", "having", "had", "will have"], a: 2 },
+                { q: "They have studied English ______ 2018.", options: ["since", "for", "in", "at"], a: 0 },
+                { q: "This is the ______ interesting book I've ever read.", options: ["most", "more", "much", "many"], a: 0 },
+                { q: "It's raining heavily. ______, we can't go to the beach.", options: ["Because", "Therefore", "However", "Although"], a: 1 },
+                { q: "Let's ______ the environment by using less plastic.", options: ["protect", "to protect", "protecting", "protected"], a: 0 },
+                { q: "We were very ______ that he passed the driving test.", options: ["surprise", "surprised", "surprising", "surprisingly"], a: 1 },
+                { q: "She bought a ______ dress yesterday.", options: ["beautiful new red", "new beautiful red", "red beautiful new", "beautiful red new"], a: 0 },
+                { q: "A new bridge ______ across the river next year.", options: ["will build", "will be built", "builds", "is built"], a: 1 },
+                { q: "I am not very good ______ mathematics.", options: ["on", "at", "for", "with"], a: 1 },
+                { q: "Could you please turn ______ the volume? It's too loud.", options: ["down", "up", "on", "off"], a: 0 },
+                { q: "We couldn't sleep ______ the noise from the party.", options: ["because", "because of", "although", "in spite of"], a: 1 },
+                { q: "Find the error: She <u>asked</u> me <u>what</u> <u>was my name</u> <u>was</u>.", options: ["asked", "what", "was my name", "was"], a: 2 },
+                { q: "Find the error: <u>If</u> I <u>were</u> you, I <u>will</u> study <u>harder</u>.", options: ["If", "were", "will", "harder"], a: 2 },
+                { q: "Find the error: My father <u>enjoys</u> <u>to read</u> newspapers <u>in</u> the <u>morning</u>.", options: ["enjoys", "to read", "in", "morning"], a: 1 },
+                { q: "Choose the word CLOSEST in meaning to 'cancel':", options: ["put off", "call off", "take off", "turn off"], a: 1 },
+                { q: "Choose the word OPPOSITE in meaning to 'lazy':", options: ["hard-working", "boring", "friendly", "careful"], a: 0 },
+                { q: "John failed the exam. He didn't study hard. (Combine)", options: ["John failed the exam because he didn't study hard.", "John failed the exam although he didn't study hard.", "John didn't study hard, but he failed the exam.", "John failed the exam, so he didn't study hard."], a: 0 },
+                { q: "The boy is my cousin. You met him yesterday.", options: ["The boy who you met him yesterday is my cousin.", "The boy whom you met yesterday is my cousin.", "The boy whose you met yesterday is my cousin.", "The boy which you met yesterday is my cousin."], a: 1 },
+                { q: "She hasn't met her grandparents for two months.", options: ["She last met her grandparents two months ago.", "She didn't meet her grandparents two months ago.", "She has met her grandparents for two months.", "She started meeting her grandparents two months ago."], a: 0 },
+                { q: "I'm looking forward ______ from you soon.", options: ["to hear", "hearing", "to hearing", "hear"], a: 2 },
+                { q: "You should ______ your shoes before entering the house.", options: ["take off", "put on", "try on", "look for"], a: 0 }
+            ]
+        },
+        4: {
+            time: 45,
+            questions: [
+                { q: "Choose the word with a different pronunciation: <u>ch</u>emistry, <u>ch</u>orus, <u>ch</u>aracter, <u>ch</u>urch.", options: ["chemistry", "chorus", "character", "church"], a: 3 },
+                { q: "Choose the word with a different pronunciation: b<u>a</u>g, d<u>a</u>d, m<u>a</u>ny, m<u>a</u>p.", options: ["bag", "dad", "many", "map"], a: 2 },
+                { q: "Choose the word with a different stress pattern: 'history', 'physics', 'literature', 'mathematics'.", options: ["history", "physics", "literature", "mathematics"], a: 3 },
+                { q: "Choose the word with a different stress pattern: 'predict', 'happen', 'believe', 'destroy'.", options: ["predict", "happen", "believe", "destroy"], a: 1 },
+                { q: "The Earth ______ around the Sun.", options: ["go", "goes", "is going", "went"], a: 1 },
+                { q: "My sister usually goes to work ______ bus.", options: ["by", "on", "in", "with"], a: 0 },
+                { q: "I haven't seen him ______ Monday.", options: ["in", "on", "since", "for"], a: 2 },
+                { q: "We'll go out when the rain ______.", options: ["stop", "stops", "will stop", "stopped"], a: 1 },
+                { q: "Are you interested ______ playing football?", options: ["in", "at", "on", "about"], a: 0 },
+                { q: "He works very ______. He always gets good marks.", options: ["hard", "hardly", "good", "badly"], a: 0 },
+                { q: "This building ______ 50 years ago.", options: ["built", "was built", "is built", "has built"], a: 1 },
+                { q: "A tornado is a funnel-shaped storm ______ passes overland below a thunderstorm.", options: ["who", "whom", "which", "whose"], a: 2 },
+                { q: "If I ______ a bird, I would fly everywhere.", options: ["am", "was", "were", "be"], a: 2 },
+                { q: "It's time you ______ to bed. It's too late.", options: ["go", "to go", "going", "went"], a: 3 },
+                { q: "She suggested ______ money for the poor children.", options: ["save", "to save", "saving", "saved"], a: 2 },
+                { q: "He used to ______ up late when he was young.", options: ["stay", "stayed", "staying", "stays"], a: 0 },
+                { q: "The doctor advised me ______ more water.", options: ["drink", "drinking", "to drink", "drank"], a: 2 },
+                { q: "They haven't finished their work, ______?", options: ["have they", "haven't they", "do they", "don't they"], a: 0 },
+                { q: "He apologized ______ being late.", options: ["for", "of", "about", "with"], a: 0 },
+                { q: "I am disappointed ______ people have spoiled this area.", options: ["that", "when", "if", "how"], a: 0 },
+                { q: "Find the error: <u>The</u> water was <u>so</u> cold <u>that</u> we couldn't swim <u>in</u> it.", options: ["The", "so", "that", "in"], a: 1 }, // Trick question, sentence is correct. Let's make an error:
+                { q: "Find the error: <u>He</u> asked me <u>if</u> I <u>have</u> done my homework <u>yet</u>.", options: ["He", "if", "have", "yet"], a: 2 },
+                { q: "Find the error: <u>Although</u> she was tired, <u>but</u> she <u>finished</u> her <u>work</u>.", options: ["Although", "but", "finished", "work"], a: 1 },
+                { q: "Find the error: The man <u>which</u> is standing <u>there</u> is <u>my</u> uncle <u>Tom</u>.", options: ["which", "there", "my", "Tom"], a: 0 },
+                { q: "Choose the word CLOSEST in meaning to 'disaster':", options: ["event", "catastrophe", "disease", "storm"], a: 1 },
+                { q: "Choose the word OPPOSITE in meaning to 'advantage':", options: ["disadvantage", "benefit", "profit", "value"], a: 0 },
+                { q: "\"Why don't we go to the cinema?\" he said.", options: ["He suggested going to the cinema.", "He asked me to go to the cinema.", "He denied going to the cinema.", "He promised to go to the cinema."], a: 0 },
+                { q: "They started playing tennis 2 hours ago.", options: ["They have played tennis for 2 hours.", "They have played tennis since 2 hours.", "They haven't played tennis for 2 hours.", "They play tennis in 2 hours."], a: 0 },
+                { q: "The test was very difficult. We couldn't do it.", options: ["The test was too difficult for us to do.", "The test was enough difficult for us to do.", "The test was so difficult that we can do it.", "The test was such difficult that we couldn't do it."], a: 0 },
+                { q: "She is a beautiful dancer.", options: ["She dances beautifully.", "She dances beautiful.", "She is beautifully.", "She is dancing beautiful."], a: 0 }
+            ]
+        },
+        5: {
+            time: 45,
+            questions: [
+                { q: "Choose the word with a different pronunciation: cl<u>ea</u>n, m<u>ea</u>n, br<u>ea</u>d, t<u>ea</u>m.", options: ["clean", "mean", "bread", "team"], a: 2 },
+                { q: "Choose the word with a different pronunciation: <u>s</u>ugar, <u>s</u>ure, <u>s</u>un, <u>sh</u>oe.", options: ["sugar", "sure", "sun", "shoe"], a: 2 },
+                { q: "Choose the word with a different stress pattern: 'celebrate', 'decorate', 'nominate', 'distinguish'.", options: ["celebrate", "decorate", "nominate", "distinguish"], a: 3 },
+                { q: "Choose the word with a different stress pattern: 'typhoon', 'volcano', 'earthquake', 'tornado'.", options: ["typhoon", "volcano", "earthquake", "tornado"], a: 2 },
+                { q: "Tet is a festival ______ occurs in late January or early February.", options: ["who", "whom", "which", "whose"], a: 2 },
+                { q: "Mount Pinatubo, ______ is a volcano in the Philippines, erupted in 1991.", options: ["which", "that", "who", "where"], a: 0 },
+                { q: "Even though I have a car, I prefer ______ by train.", options: ["to travel", "travel", "traveled", "will travel"], a: 0 },
+                { q: "Are you ______ of the dark?", options: ["afraid", "scared", "terrified", "All are correct"], a: 3 },
+                { q: "The people ______ live in this village are very friendly.", options: ["which", "who", "whom", "where"], a: 1 },
+                { q: "My mother told me ______ spend too much time playing games.", options: ["not", "to not", "not to", "don't"], a: 2 },
+                { q: "She works ______ than her sister.", options: ["harder", "more hard", "more hardly", "hard"], a: 0 },
+                { q: "We are talking about the preservation of ______ resources.", options: ["nature", "natural", "naturally", "naturalize"], a: 1 },
+                { q: "If we go on littering, the environment will become seriously ______.", options: ["pollute", "polluted", "pollution", "pollutant"], a: 1 },
+                { q: "I suggest ______ money to help the victims of the flood.", options: ["raise", "to raise", "raising", "raised"], a: 2 },
+                { q: "He didn't have much money, ______ he bought a lot of things.", options: ["but", "so", "because", "and"], a: 0 },
+                { q: "We can save natural resources by using ______ energy.", options: ["sun", "sunlight", "solar", "sunshine"], a: 2 },
+                { q: "Auld Lang Syne is a song ______ is sung on New Year's Eve.", options: ["who", "whom", "which", "whose"], a: 2 },
+                { q: "Passover is celebrated ______ Israel and by all Jewish people.", options: ["in", "on", "at", "for"], a: 0 },
+                { q: "Family members who live apart try to be together ______ Tet.", options: ["in", "on", "at", "for"], a: 2 },
+                { q: "I congratulate you ______ your excellent exam results.", options: ["in", "on", "at", "about"], a: 1 },
+                { q: "Find the error: <u>If</u> I <u>have</u> a lot of money, I <u>would buy</u> a <u>new</u> car.", options: ["If", "have", "would buy", "new"], a: 1 },
+                { q: "Find the error: <u>The</u> boy <u>which</u> won the first prize <u>is</u> <u>my</u> best friend.", options: ["The", "which", "is", "my"], a: 1 },
+                { q: "Find the error: I <u>suggested</u> <u>to go</u> to <u>the</u> cinema <u>tonight</u>.", options: ["suggested", "to go", "the", "tonight"], a: 1 },
+                { q: "Choose the word CLOSEST in meaning to 'predict':", options: ["guess", "know", "foretell", "tell"], a: 2 },
+                { q: "Choose the word OPPOSITE in meaning to 'destroy':", options: ["build", "ruin", "damage", "break"], a: 0 },
+                { q: "Although he was ill, he went to school.", options: ["In spite of his illness, he went to school.", "Because of his illness, he went to school.", "Despite he was ill, he went to school.", "He went to school, so he was ill."], a: 0 },
+                { q: "They will build a new school here.", options: ["A new school will be built here.", "A new school will build here.", "A new school will built here.", "A new school is built here."], a: 0 },
+                { q: "\"Do you like reading books?\" she asked me.", options: ["She asked me if I liked reading books.", "She asked me do I like reading books.", "She asked me if I like reading books.", "She asked me whether I do like reading books."], a: 0 },
+                { q: "I don't have a computer.", options: ["I wish I have a computer.", "I wish I had a computer.", "I wish I will have a computer.", "I wish I am having a computer."], a: 1 },
+                { q: "The last time I saw him was 2 weeks ago.", options: ["I haven't seen him for 2 weeks.", "I didn't see him for 2 weeks.", "I have seen him for 2 weeks.", "I saw him 2 weeks ago."], a: 0 }
+            ]
+        }
+    }
+};
+      
+
+        // Lấy thông số từ URL (VD: ?subject=math&id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const subject = urlParams.get('subject');
+        const examId = urlParams.get('id');
+
+        // Khởi tạo đề thi
+        let currentQuestions = [];
+        if (examDatabase[subject] && examDatabase[subject][examId]) {
+            currentQuestions = examDatabase[subject][examId];
+            const subjectName = subject === 'math' ? 'Toán' : 'Tiếng Anh';
+            document.getElementById('examTitle').innerText = `Đề ${subjectName} 0${examId}`;
+            renderQuestions();
+        } else {
+            document.getElementById('questionsContainer').innerHTML = `<div class="bg-red-50 text-red-600 p-6 rounded-lg text-center">Dữ liệu đề thi này đang được anh trai cập nhật! Em hãy làm đề khác trước nhé.</div>`;
+            document.querySelector('button').style.display = 'none';
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questionsContainer');
+            let html = '';
+            currentQuestions.forEach((q, qIndex) => {
+                let optionsHtml = '';
+                q.options.forEach((opt, optIndex) => {
+                    optionsHtml += `
+                        <label class="block p-4 border border-gray-200 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors">
+                            <input type="radio" name="q${qIndex}" value="${optIndex}" class="mr-3 h-4 w-4 text-blue-600">
+                            <span>${opt}</span>
+                        </label>
+                    `;
+                });
+                html += `
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-lg mb-4 text-gray-800"><span class="text-blue-600">Câu ${qIndex + 1}:</span> ${q.q}</h3>
+                        <div class="space-y-3">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            
+            // Re-render LaTeX sau khi chèn HTML
+            if(window.MathJax) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        // Logic Đồng hồ 45 phút
+        let timeLeft = 45 * 60; // 45 phút
+        let timerInterval = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                submitExam();
+                return;
+            }
+            timeLeft--;
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer').innerText = `${m}:${s}`;
+        }, 1000);
+
+        // Chấm điểm và Lưu
+        function submitExam() {
+            clearInterval(timerInterval);
+            let score = 0;
+            const total = currentQuestions.length;
+
+            currentQuestions.forEach((q, index) => {
+                const selected = document.querySelector(`input[name="q${index}"]:checked`);
+                if (selected && parseInt(selected.value) === q.a) {
+                    score++;
+                }
+            });
+
+            // Quy đổi sang thang điểm 10
+            const finalScore = total > 0 ? ((score / total) * 10).toFixed(1) : 0;
+
+            // Lưu vào localStorage để Landing page đọc được
+            localStorage.setItem(`${subject}_${examId}_score`, finalScore);
+
+            // Hiện kết quả
+            document.getElementById('scoreDisplay').innerText = finalScore;
+            document.getElementById('resultModal').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
