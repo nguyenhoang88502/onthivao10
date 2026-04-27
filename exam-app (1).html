@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luyện Thi THCS — Toán & Tiếng Anh</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0f172a;
+  --navy2: #1e293b;
+  --navy3: #334155;
+  --gold: #f59e0b;
+  --gold2: #fbbf24;
+  --gold-dim: rgba(245,158,11,0.12);
+  --teal: #0ea5e9;
+  --green: #10b981;
+  --red: #ef4444;
+  --white: #f8fafc;
+  --muted: #94a3b8;
+  --card: rgba(30,41,59,0.95);
+  --radius: 16px;
+  --shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--navy);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===== BACKGROUND ===== */
+.bg-layer {
+  position: fixed; inset: 0; z-index: 0;
+  background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(14,165,233,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse 60% 80% at 80% 90%, rgba(245,158,11,0.06) 0%, transparent 60%),
+              linear-gradient(160deg, #0f172a 0%, #0c1628 50%, #0f1f2e 100%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image: linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ===== SCREENS ===== */
+.screen { position: relative; z-index: 1; display: none; }
+.screen.active { display: flex; }
+
+/* ===== HOME SCREEN ===== */
+#home {
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  animation: fadeIn 0.6s ease;
+}
+
+@keyframes fadeIn { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:none; } }
+
+.brand {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.brand-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--gold-dim);
+  border: 1px solid rgba(245,158,11,0.3);
+  border-radius: 100px;
+  padding: 6px 18px;
+  font-size: 12px; font-weight: 600; letter-spacing: 1.5px;
+  color: var(--gold2); text-transform: uppercase;
+  margin-bottom: 24px;
+}
+.brand h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 900;
+  line-height: 1.1;
+  background: linear-gradient(135deg, #f8fafc 30%, var(--gold2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.brand p {
+  color: var(--muted); font-size: 16px; margin-top: 12px;
+  font-weight: 300; letter-spacing: 0.3px;
+}
+
+/* Subject tabs */
+.subject-tabs {
+  display: flex; gap: 12px; margin-bottom: 32px;
+}
+.subject-tab {
+  flex: 1; padding: 14px 32px;
+  background: var(--navy2);
+  border: 2px solid transparent;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 600;
+  color: var(--muted); cursor: pointer;
+  transition: all 0.25s;
+}
+.subject-tab.active {
+  background: var(--gold-dim);
+  border-color: var(--gold);
+  color: var(--gold2);
+}
+.subject-tab:hover:not(.active) { border-color: var(--navy3); color: var(--white); }
+
+/* Exam grid */
+.exam-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  max-width: 700px;
+  width: 100%;
+}
+@media (max-width: 600px) { .exam-grid { grid-template-columns: repeat(5, 1fr); gap: 8px; } }
+
+.exam-card {
+  aspect-ratio: 1;
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px;
+  cursor: pointer;
+  transition: all 0.25s;
+  backdrop-filter: blur(10px);
+}
+.exam-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold);
+  box-shadow: 0 12px 40px rgba(245,158,11,0.15);
+}
+.exam-card .num {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 700;
+  color: var(--white);
+}
+.exam-card .label {
+  font-size: 10px; font-weight: 500;
+  color: var(--muted); letter-spacing: 1px; text-transform: uppercase;
+}
+.exam-card .pills {
+  display: flex; gap: 4px; margin-top: 4px;
+}
+.pill {
+  font-size: 9px; font-weight: 600; padding: 2px 7px;
+  border-radius: 100px; letter-spacing: 0.5px;
+}
+.pill.q { background: rgba(14,165,233,0.2); color: var(--teal); }
+.pill.t { background: rgba(16,185,129,0.2); color: var(--green); }
+
+/* ===== EXAM SCREEN ===== */
+#exam {
+  min-height: 100vh;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 280px; min-height: 100vh;
+  background: var(--navy2);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column;
+  padding: 24px 20px;
+  flex-shrink: 0;
+  position: sticky; top: 0;
+}
+.sidebar-header {
+  margin-bottom: 24px;
+}
+.back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: none; border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 8px 14px; color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  cursor: pointer; transition: all 0.2s; margin-bottom: 16px;
+}
+.back-btn:hover { border-color: var(--muted); color: var(--white); }
+.sidebar-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px; font-weight: 700; color: var(--white);
+  margin-bottom: 4px;
+}
+.sidebar-sub { font-size: 12px; color: var(--muted); }
+
+/* Timer */
+.timer-box {
+  background: var(--navy); border-radius: 12px;
+  padding: 16px; margin-bottom: 20px;
+  border: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
+}
+.timer-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.timer-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 36px; font-weight: 600;
+  color: var(--green);
+  transition: color 0.5s;
+}
+.timer-value.warn { color: var(--gold); }
+.timer-value.danger { color: var(--red); animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* Progress */
+.progress-info {
+  display: flex; justify-content: space-between;
+  font-size: 12px; color: var(--muted); margin-bottom: 6px;
+}
+.progress-bar {
+  height: 4px; background: var(--navy3); border-radius: 2px;
+  margin-bottom: 20px;
+}
+.progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width 0.4s;
+}
+
+/* Question nav grid */
+.nav-label { font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+.qnav-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  margin-bottom: 24px;
+}
+.qnav-btn {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--navy);
+  font-size: 12px; font-weight: 500;
+  color: var(--muted); cursor: pointer;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.qnav-btn.current { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+.qnav-btn.answered { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.4); color: var(--green); }
+.qnav-btn.answered.current { border-color: var(--gold); }
+
+/* Submit */
+.submit-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--gold), #d97706);
+  border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: var(--navy); cursor: pointer;
+  transition: all 0.2s;
+  margin-top: auto;
+}
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
+
+/* Main content */
+.main-content {
+  flex: 1; padding: 40px;
+  display: flex; flex-direction: column;
+  max-width: 760px;
+}
+
+/* Question card */
+.q-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  padding: 36px; margin-bottom: 24px;
+  backdrop-filter: blur(10px);
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from { opacity:0; transform: translateX(16px); } to { opacity:1; transform:none; } }
+
+.q-num {
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  color: var(--gold); text-transform: uppercase; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.q-num::after { content:''; flex:1; height:1px; background: rgba(245,158,11,0.2); }
+
+.q-text {
+  font-size: 17px; line-height: 1.7; color: var(--white);
+  font-weight: 400; margin-bottom: 32px;
+}
+
+/* Options */
+.options { display: flex; flex-direction: column; gap: 12px; }
+.option-btn {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  cursor: pointer; transition: all 0.2s;
+  text-align: left; width: 100%;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px; color: var(--white);
+}
+.option-btn:hover { border-color: var(--teal); background: rgba(14,165,233,0.06); }
+.option-btn.selected { border-color: var(--gold); background: var(--gold-dim); color: var(--gold2); }
+.option-btn.correct { border-color: var(--green); background: rgba(16,185,129,0.12); color: var(--green); }
+.option-btn.wrong { border-color: var(--red); background: rgba(239,68,68,0.1); color: var(--red); }
+
+.opt-letter {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0; transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.option-btn.selected .opt-letter { background: var(--gold); color: var(--navy); }
+.option-btn.correct .opt-letter { background: var(--green); color: var(--white); }
+.option-btn.wrong .opt-letter { background: var(--red); color: var(--white); }
+
+/* Navigation buttons */
+.nav-btns {
+  display: flex; gap: 12px;
+}
+.nav-btn {
+  padding: 12px 28px; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.nav-btn.prev {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,0.12);
+  color: var(--muted);
+}
+.nav-btn.prev:hover { border-color: var(--white); color: var(--white); }
+.nav-btn.next {
+  background: var(--teal); border: none; color: var(--white);
+  flex: 1;
+}
+.nav-btn.next:hover { background: #0284c7; transform: translateY(-1px); }
+
+/* ===== RESULT SCREEN ===== */
+#result {
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  animation: fadeIn 0.5s ease;
+}
+.result-card {
+  background: var(--card);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 48px;
+  max-width: 600px; width: 100%;
+  text-align: center;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow);
+}
+.score-ring {
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  margin: 0 auto 32px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  position: relative;
+}
+.score-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.score-ring circle { fill: none; stroke-width: 10; }
+.score-ring .bg { stroke: rgba(255,255,255,0.06); }
+.score-ring .fg { stroke: var(--gold); stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.score-number {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px; font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--white), var(--gold2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.score-denom { font-size: 14px; color: var(--muted); margin-top: 2px; }
+.result-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px; font-weight: 700; margin-bottom: 8px;
+}
+.result-msg { color: var(--muted); font-size: 15px; margin-bottom: 32px; }
+.result-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-bottom: 32px;
+}
+.stat-box {
+  background: var(--navy2); border-radius: 12px; padding: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.stat-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 24px; font-weight: 600; margin-bottom: 4px;
+}
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.muted { color: var(--muted); }
+.stat-lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+.result-actions { display: flex; gap: 12px; }
+.ra-btn {
+  flex: 1; padding: 14px 20px; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+}
+.ra-btn.primary { background: var(--gold); border: none; color: var(--navy); }
+.ra-btn.primary:hover { background: var(--gold2); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,158,11,0.3); }
+.ra-btn.secondary { background: transparent; border: 1.5px solid rgba(255,255,255,0.12); color: var(--white); }
+.ra-btn.secondary:hover { border-color: var(--white); }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sidebar { display: none; }
+  .main-content { padding: 24px 16px; max-width: 100%; }
+}
+
+/* Mobile header strip */
+.mobile-header {
+  display: none;
+  background: var(--navy2);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 12px 16px;
+  align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+@media (max-width: 900px) {
+  .mobile-header { display: flex; }
+  #exam { flex-direction: column; }
+}
+.mobile-timer {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px; font-weight: 600; color: var(--green);
+}
+.mobile-timer.warn { color: var(--gold); }
+.mobile-timer.danger { color: var(--red); }
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<!-- ===== HOME ===== -->
+<div id="home" class="screen active">
+  <div class="brand">
+    <div class="brand-badge">⭐ Luyện Thi THCS 2024</div>
+    <h1>Bộ Đề Kiểm Tra<br>Toán & Tiếng Anh</h1>
+    <p>10 đề mỗi môn · 20 câu/đề · 45 phút làm bài</p>
+  </div>
+
+  <div class="subject-tabs">
+    <button class="subject-tab active" onclick="switchSubject('math')">📐 Toán học</button>
+    <button class="subject-tab" onclick="switchSubject('english')">📖 Tiếng Anh</button>
+  </div>
+
+  <div class="exam-grid" id="examGrid"></div>
+</div>
+
+<!-- ===== EXAM ===== -->
+<div id="exam" class="screen">
+  <!-- Mobile header -->
+  <div class="mobile-header">
+    <button class="back-btn" onclick="goHome()" style="margin:0; border:none; background:none; padding:0;">← Thoát</button>
+    <div>
+      <div class="mobile-timer" id="mobileTimer">45:00</div>
+    </div>
+    <div id="mobileProgress" style="font-size:13px;color:var(--muted)">0/20</div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <button class="back-btn" onclick="goHome()">← Thoát</button>
+      <div class="sidebar-title" id="sidebarTitle">Đề 1</div>
+      <div class="sidebar-sub" id="sidebarSub">Toán học · 20 câu</div>
+    </div>
+
+    <div class="timer-box">
+      <div class="timer-label">⏱ Thời gian còn lại</div>
+      <div class="timer-value" id="timerDisplay">45:00</div>
+    </div>
+
+    <div class="progress-info">
+      <span id="progressText">Câu 1/20</span>
+      <span id="answeredText">0 đã trả lời</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <div class="nav-label">Bảng câu hỏi</div>
+    <div class="qnav-grid" id="qnavGrid"></div>
+
+    <button class="submit-btn" onclick="submitExam()">Nộp bài →</button>
+  </div>
+
+  <!-- Main -->
+  <div class="main-content">
+    <div class="q-card">
+      <div class="q-num" id="qNum">Câu 01</div>
+      <div class="q-text" id="qText">Loading...</div>
+      <div class="options" id="optionsContainer"></div>
+    </div>
+    <div class="nav-btns">
+      <button class="nav-btn prev" onclick="navigate(-1)">← Trước</button>
+      <button class="nav-btn next" onclick="navigate(1)" id="nextBtn">Tiếp theo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="result" class="screen">
+  <div class="result-card">
+    <div class="score-ring" id="scoreRing">
+      <svg viewBox="0 0 160 160">
+        <circle class="bg" cx="80" cy="80" r="70"/>
+        <circle class="fg" cx="80" cy="80" r="70" id="scoreCircle"
+          stroke-dasharray="439.8" stroke-dashoffset="439.8"/>
+      </svg>
+      <div>
+        <div class="score-number" id="scoreNum">0</div>
+        <div class="score-denom" id="scoreDenom">/ 20 câu</div>
+      </div>
+    </div>
+    <div class="result-title" id="resultTitle">Xuất sắc! 🎉</div>
+    <div class="result-msg" id="resultMsg">Bạn đã hoàn thành bài thi.</div>
+    <div class="result-stats">
+      <div class="stat-box">
+        <div class="stat-val green" id="statCorrect">0</div>
+        <div class="stat-lbl">Đúng</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val red" id="statWrong">0</div>
+        <div class="stat-lbl">Sai</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val muted" id="statSkip">0</div>
+        <div class="stat-lbl">Bỏ qua</div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="ra-btn primary" onclick="retakeExam()">Làm lại đề này</button>
+      <button class="ra-btn secondary" onclick="goHome()">Về trang chủ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// DATABASE — 10 ĐỀ x 20 CÂU x 2 MÔN
+// ==========================================
+const examDatabase = {
+  math: {
+    1: { time: 45, questions: [
+      { q: "Rút gọn biểu thức $A = \\sqrt{16} + \\sqrt{9}$.", options: ["7","5","12","25"], a: 0 },
+      { q: "Giải phương trình $x^2 - 5x + 6 = 0$. Tổng các nghiệm là:", options: ["-5","5","6","-6"], a: 1 },
+      { q: "Một nón có bán kính đáy $r = 3$ cm, chiều cao $h = 4$ cm. Đường sinh $l$ của nón là:", options: ["5 cm","7 cm","4 cm","3 cm"], a: 0 },
+      { q: "Diện tích xung quanh nón ($r=3$, $l=5$, $\\pi=3.14$) là:", options: ["47.1 cm²","37.68 cm²","18.84 cm²","94.2 cm²"], a: 0 },
+      { q: "Hệ số góc của đường thẳng $y = 2x - 3$ là:", options: ["-3","2","3","-2"], a: 1 },
+      { q: "Giá trị của hàm số $y = -x^2$ tại $x = -2$ là:", options: ["4","-4","2","-2"], a: 1 },
+      { q: "Biểu thức $\\sqrt{x-2}$ xác định khi:", options: ["$x > 2$","$x < 2$","$x \\geq 2$","$x \\leq 2$"], a: 2 },
+      { q: "Trong các hàm số sau, hàm số nào đồng biến trên $\\mathbb{R}$?", options: ["$y = -3x + 1$","$y = 2x - 5$","$y = -x$","$y = 4 - x$"], a: 1 },
+      { q: "Căn bậc hai số học của $49$ là:", options: ["-7","7","$\\pm 7$","2401"], a: 1 },
+      { q: "Tích hai nghiệm của phương trình $x^2 - 4x + 3 = 0$ là:", options: ["4","3","-4","-3"], a: 1 },
+      { q: "Số nào sau đây vô tỉ?", options: ["$\\sqrt{4}$","$\\sqrt{9}$","$\\sqrt{2}$","$\\sqrt{16}$"], a: 2 },
+      { q: "Phương trình $x^2 - 2x + 1 = 0$ có bao nhiêu nghiệm?", options: ["0","1","2","vô số"], a: 1 },
+      { q: "Hàm số $y = x^2 - 2x + 3$ tại $x = 1$ có giá trị bằng:", options: ["0","1","2","3"], a: 2 },
+      { q: "Đường thẳng $y = 3x + 2$ đi qua điểm nào sau đây?", options: ["$(1;5)$","$(1;3)$","$(0;3)$","$(2;5)$"], a: 0 },
+      { q: "Rút gọn: $\\dfrac{x^2-4}{x+2}$ (với $x \\neq -2$).", options: ["$x-2$","$x+2$","$x^2-2$","$2$"], a: 0 },
+      { q: "Tam giác ABC vuông tại C, $AB = 13$, $BC = 5$. Độ dài $AC$ là:", options: ["8","10","12","14"], a: 2 },
+      { q: "Chu vi đường tròn tâm O bán kính $R=7$ cm (lấy $\\pi = 3.14$):", options: ["21.98 cm","43.96 cm","153.86 cm","87.92 cm"], a: 1 },
+      { q: "Nghiệm của phương trình $2x - 8 = 0$ là:", options: ["$x = -4$","$x = 4$","$x = 2$","$x = 8$"], a: 1 },
+      { q: "Tọa độ đỉnh của parabol $y = x^2 - 4x + 5$ là:", options: ["$(2; 1)$","$(-2; 1)$","$(2; -1)$","$(4; 5)$"], a: 0 },
+      { q: "Giá trị của $\\cos 60°$ là:", options: ["$1$","$\\dfrac{\\sqrt{3}}{2}$","$\\dfrac{1}{2}$","$0$"], a: 2 }
+    ]},
+    2: { time: 45, questions: [
+      { q: "Giá trị của $\\sin 30°$ là:", options: ["$\\dfrac{\\sqrt{3}}{2}$","$\\dfrac{1}{2}$","$1$","$0$"], a: 1 },
+      { q: "Nghiệm của hệ phương trình $\\begin{cases}x+y=5 \\\\ x-y=1\\end{cases}$ là:", options: ["$(2;3)$","$(3;2)$","$(1;4)$","$(4;1)$"], a: 1 },
+      { q: "Đường thẳng nào sau đây song song với $y = 2x - 1$?", options: ["$y = 2x + 3$","$y = -2x+1$","$y = x-1$","$y = \\tfrac{1}{2}x$"], a: 0 },
+      { q: "Diện tích hình tròn bán kính $5$ cm ($\\pi=3.14$) là:", options: ["31.4 cm²","78.5 cm²","15.7 cm²","157 cm²"], a: 1 },
+      { q: "Tính $\\sqrt{50} - \\sqrt{8}$:", options: ["$\\sqrt{42}$","$3\\sqrt{2}$","$\\sqrt{2}$","$5\\sqrt{2}-2\\sqrt{2}$"], a: 1 },
+      { q: "Tích phân? Không, chọn: Biệt thức $\\Delta$ của $3x^2 - 7x + 2 = 0$ là:", options: ["$1$","$25$","$49 - 24 = 25$","$49$"], a: 2 },
+      { q: "Cho $\\tan\\alpha = 1$. Góc $\\alpha$ (nhọn) bằng:", options: ["$30°$","$45°$","$60°$","$90°$"], a: 1 },
+      { q: "Diện tích tam giác có đáy $8$ cm, chiều cao $5$ cm là:", options: ["40 cm²","13 cm²","20 cm²","80 cm²"], a: 2 },
+      { q: "Rút gọn $2\\sqrt{3} \\cdot \\sqrt{12}$:", options: ["$12$","$6\\sqrt{6}$","$4\\sqrt{3}$","$24$"], a: 0 },
+      { q: "Đường tròn $(O; 6)$ và dây $AB$ cách tâm $O$ một khoảng $4$ cm. Độ dài dây $AB$ là:", options: ["$2\\sqrt{5}$","$4\\sqrt{5}$","$2\\sqrt{20}$","$8$"], a: 1 },
+      { q: "Hàm số $y = ax + b$ với $a = -2, b = 4$ nghịch biến vì:", options: ["$b > 0$","$a < 0$","$a > 0$","$b < 0$"], a: 1 },
+      { q: "Phương trình $x^2 + 2x - 3 = 0$ có các nghiệm là:", options: ["$1$ và $3$","$1$ và $-3$","$-1$ và $3$","$-1$ và $-3$"], a: 1 },
+      { q: "Tam giác nào sau đây là tam giác vuông?", options: ["$3,4,6$","$5,12,13$","$2,3,4$","$6,8,11$"], a: 1 },
+      { q: "Thể tích hình hộp chữ nhật dài $4$, rộng $3$, cao $2$ là:", options: ["$18$","$24$","$14$","$26$"], a: 1 },
+      { q: "Kết quả rút gọn $\\sqrt{x^2}$ (với $x < 0$) là:", options: ["$x$","$-x$","$|x|$","$x^2$"], a: 1 },
+      { q: "Góc nội tiếp chắn nửa đường tròn bằng:", options: ["$45°$","$60°$","$90°$","$180°$"], a: 2 },
+      { q: "Tổng các góc trong của một đa giác $6$ cạnh là:", options: ["$540°$","$720°$","$900°$","$360°$"], a: 1 },
+      { q: "Rút gọn: $(a - b)^2 = $", options: ["$a^2-b^2$","$a^2-2ab+b^2$","$a^2+2ab+b^2$","$a^2+b^2$"], a: 1 },
+      { q: "Phương trình $\\sqrt{x} = 3$ có nghiệm là:", options: ["$x=9$","$x=6$","$x=\\sqrt{3}$","$x=3$"], a: 0 },
+      { q: "Trong đường tròn $(O; R)$, đường kính là dây có độ dài:", options: ["$R$","$2R$","$3R$","$\\pi R$"], a: 1 }
+    ]},
+    3: { time: 45, questions: [
+      { q: "Số $\\pi$ là:", options: ["Số hữu tỉ","Số nguyên","Số vô tỉ","Số tự nhiên"], a: 2 },
+      { q: "Rút gọn $\\dfrac{2x^2 - 2}{x - 1}$ (với $x\\neq 1$):", options: ["$2x+2$","$2x-2$","$2(x+1)$","Cả A và C"], a: 3 },
+      { q: "Tìm $x$ biết $\\sqrt{2x-1} = 3$:", options: ["$x=5$","$x=4$","$x=10$","$x=\\tfrac{10}{2}$"], a: 0 },
+      { q: "Đường thẳng $y = kx + m$ đi qua gốc tọa độ khi:", options: ["$k=0$","$m=0$","$k=m$","$k>0$"], a: 1 },
+      { q: "Cho $\\sin\\alpha = 0.6$, $\\cos\\alpha$ là:", options: ["$0.4$","$0.8$","$0.6$","$1$"], a: 1 },
+      { q: "Nghiệm dương nhỏ nhất của $x^2 - x - 6 = 0$ là:", options: ["$2$","$3$","$-2$","$6$"], a: 1 },
+      { q: "Tam giác cân $ABC$ có $AB=AC=10$ cm, $BC=12$ cm. Chiều cao từ $A$ là:", options: ["$6$ cm","$7$ cm","$8$ cm","$5$ cm"], a: 2 },
+      { q: "Phương trình bậc nhất $ax + b = 0$ ($a \\neq 0$) có:", options: ["Vô nghiệm","2 nghiệm","Đúng 1 nghiệm","Vô số nghiệm"], a: 2 },
+      { q: "Giá trị $\\tan 30°$ là:", options: ["$\\dfrac{1}{\\sqrt{3}}$","$\\sqrt{3}$","$\\dfrac{\\sqrt{3}}{2}$","$1$"], a: 0 },
+      { q: "Điểm nào sau đây thuộc đồ thị $y = x^2$?", options: ["$(2; 3)$","$(-3; 9)$","$(1; 0)$","$(0; 1)$"], a: 1 },
+      { q: "Thể tích hình cầu bán kính $R=3$ (lấy $\\pi = 3.14$):", options: ["$113.04$","$37.68$","$28.26$","$56.52$"], a: 0 },
+      { q: "Tính $A = 2\\sqrt{3} + \\sqrt{27}$:", options: ["$5\\sqrt{3}$","$3\\sqrt{3}$","$\\sqrt{30}$","$6\\sqrt{3}$"], a: 0 },
+      { q: "Parabol $y = x^2 - 6x + 5$ cắt trục $Ox$ tại $x$?", options: ["$1$ và $5$","$-1$ và $-5$","$2$ và $3$","$3$ và $5$"], a: 0 },
+      { q: "Với $x > 0$, rút gọn $\\sqrt{9x^2}$:", options: ["$3x$","$9x$","$3x^2$","$9$"], a: 0 },
+      { q: "Đường tròn ngoại tiếp tam giác đều cạnh $a$ có bán kính:", options: ["$\\dfrac{a}{2}$","$\\dfrac{a\\sqrt{3}}{3}$","$\\dfrac{a\\sqrt{3}}{2}$","$a$"], a: 1 },
+      { q: "Tập xác định của hàm số $y=\\dfrac{1}{x-2}$ là:", options: ["$\\mathbb{R}$","$\\{2\\}$","$\\mathbb{R}\\setminus\\{2\\}$","$x>2$"], a: 2 },
+      { q: "Nghiệm của $3(x-2) = 2(x+1)$ là:", options: ["$x=7$","$x=8$","$x=-7$","$x=-8$"], a: 1 },
+      { q: "Hai đường thẳng $y = 2x + 1$ và $y = 2x - 3$ có vị trí:", options: ["Cắt nhau","Song song","Trùng nhau","Vuông góc"], a: 1 },
+      { q: "Tính $(-\\sqrt{5})^2$:", options: ["$-5$","$5$","$\\sqrt{5}$","$25$"], a: 1 },
+      { q: "Nếu $a^2 = 25$ thì $a$ có thể bằng:", options: ["$5$ hoặc $-5$","Chỉ $5$","Chỉ $-5$","$\\sqrt{5}$"], a: 0 }
+    ]},
+    4: { time: 45, questions: [
+      { q: "Diện tích hình thang có hai đáy $6$ cm và $10$ cm, chiều cao $4$ cm là:", options: ["32 cm²","24 cm²","40 cm²","16 cm²"], a: 0 },
+      { q: "Tính $\\sqrt{\\dfrac{9}{16}}$:", options: ["$\\dfrac{3}{4}$","$\\dfrac{4}{3}$","$\\dfrac{9}{16}$","$\\dfrac{3}{16}$"], a: 0 },
+      { q: "Phương trình $x^2 = -4$ có nghiệm không?", options: ["Có, $x=2$","Có, $x=\\pm 2i$","Không có nghiệm thực","Có, $x=-2$"], a: 2 },
+      { q: "Trong tam giác vuông, cạnh đối diện góc $30°$ bằng:", options: ["Cạnh kề","Nửa cạnh huyền","Căn 3 / 2 cạnh huyền","Cạnh huyền"], a: 1 },
+      { q: "Tập nghiệm của bất phương trình $2x - 4 < 0$ là:", options: ["$x < 2$","$x > 2$","$x \\leq 2$","$x \\geq 2$"], a: 0 },
+      { q: "Thể tích hình trụ bán kính $3$ cm, cao $5$ cm ($\\pi=3.14$) là:", options: ["$47.1$ cm³","$94.2$ cm³","$141.3$ cm³","$188.4$ cm³"], a: 2 },
+      { q: "Số nghiệm của $x^2 + x + 1 = 0$ là:", options: ["0","1","2","3"], a: 0 },
+      { q: "Tính $\\log_2 8$:", options: ["$2$","$3$","$4$","$8$"], a: 1 },
+      { q: "Cặp điểm nào nằm trên đường thẳng $y = -2x + 4$?", options: ["$(0;4)$","$(1;2)$","$(2;0)$","Tất cả đều đúng"], a: 3 },
+      { q: "Tỉ số $\\dfrac{BC}{AC}$ trong tam giác vuông tại $A$ bằng:", options: ["$\\sin C$","$\\cos C$","$\\tan C$","$\\sin B$"], a: 0 },
+      { q: "Đường kính của đường tròn nội tiếp tam giác đều cạnh $6$ bằng:", options: ["$2\\sqrt{3}$","$\\sqrt{3}$","$3$","$2$"], a: 0 },
+      { q: "Rút gọn: $\\dfrac{a^2 - b^2}{a+b}$ với $a \\neq -b$:", options: ["$a+b$","$a-b$","$a^2-b$","$1$"], a: 1 },
+      { q: "Nghiệm của phương trình $|2x - 4| = 6$ là:", options: ["$x=5$","$x=-1$","$x=5$ hoặc $x=-1$","$x=1$"], a: 2 },
+      { q: "Hai điểm $A(1;2)$ và $B(4;6)$. Khoảng cách $AB$ là:", options: ["$3$","$4$","$5$","$6$"], a: 2 },
+      { q: "Trung điểm của đoạn $AB$ với $A(2;4)$, $B(6;8)$ là:", options: ["$(4;6)$","$(3;5)$","$(4;5)$","$(8;12)$"], a: 0 },
+      { q: "Kết quả $3^3 \\cdot 3^{-1}$ bằng:", options: ["$9$","$27$","$3$","$81$"], a: 0 },
+      { q: "Tính tổng $1 + 3 + 5 + ... + 19$:", options: ["$100$","$95$","$50$","$200$"], a: 0 },
+      { q: "Phần dư khi chia $x^3 - 2x + 1$ cho $x - 1$ là:", options: ["$0$","$1$","$-1$","$2$"], a: 0 },
+      { q: "Giá trị nhỏ nhất của $y = x^2 - 4x + 7$ là:", options: ["$3$","$7$","$-4$","$4$"], a: 0 },
+      { q: "Góc tạo bởi hai tiếp tuyến của đường tròn kẻ từ điểm ngoài khi cung nhỏ $= 80°$ là:", options: ["$40°$","$80°$","$20°$","$100°$"], a: 2 }
+    ]},
+    5: { time: 45, questions: [
+      { q: "Tính $\\sqrt{(2 - \\sqrt{5})^2} + \\sqrt{5}$:", options: ["$2$","$2\\sqrt{5}$","$-2$","$\\sqrt{5}+2$"], a: 0 },
+      { q: "Tọa độ giao điểm của $y = x^2$ và $y = 2x$ là:", options: ["$(0;0)$","$(2;4)$","$(0;0)$ và $(2;4)$","$(1;1)$"], a: 2 },
+      { q: "Giá trị nhỏ nhất của hàm số $y = 2x^2 - 8x + 10$ là:", options: ["$2$","$-2$","$10$","$8$"], a: 0 },
+      { q: "Phương trình $x^2 - 5x + 4 = 0$ có nghiệm là:", options: ["$1$ và $4$","$2$ và $3$","$-1$ và $-4$","$5$ và $0$"], a: 0 },
+      { q: "Cho $A = \\dfrac{\\sqrt{x}-1}{\\sqrt{x}+1}$ (với $x \\geq 0, x \\neq 1$). Khi $x=9$, $A$ bằng:", options: ["$\\dfrac{1}{2}$","$\\dfrac{2}{3}$","$\\dfrac{1}{4}$","$2$"], a: 0 },
+      { q: "Hai tam giác đồng dạng có tỉ số đồng dạng $k=2$. Tỉ số diện tích là:", options: ["$2$","$4$","$8$","$\\sqrt{2}$"], a: 1 },
+      { q: "Trên đường tròn, góc nội tiếp bằng bao nhiêu lần góc tâm cùng chắn một cung?", options: ["$2$ lần","Bằng nhau","$\\dfrac{1}{2}$ lần","$3$ lần"], a: 2 },
+      { q: "Đường thẳng $2x - y + 1 = 0$ có hệ số góc là:", options: ["$-1$","$1$","$2$","$-2$"], a: 2 },
+      { q: "Rút gọn: $\\sqrt{12} - \\sqrt{3} + \\sqrt{27}$:", options: ["$4\\sqrt{3}$","$3\\sqrt{3}$","$2\\sqrt{3}$","$\\sqrt{3}$"], a: 0 },
+      { q: "Hình chóp đáy vuông cạnh $4$ cm, chiều cao $3$ cm. Thể tích là:", options: ["$16$ cm³","$48$ cm³","$24$ cm³","$12$ cm³"], a: 0 },
+      { q: "Tập nghiệm bất phương trình $x^2 - 4 \\leq 0$ là:", options: ["$[-2;2]$","$(-\\infty;-2) \\cup (2;+\\infty)$","$[-2;+\\infty)$","$(0;2]$"], a: 0 },
+      { q: "Tổng $n$ số hạng đầu của cấp số cộng $2, 5, 8, ...$ là $S_{10} =$:", options: ["$155$","$145$","$165$","$150$"], a: 0 },
+      { q: "Cho tam giác $ABC$ có $BC = a$, $\\angle B = 60°$, $\\angle C = 45°$. $AB = ?$", options: ["$\\dfrac{a\\sqrt{6}}{2}$","$\\dfrac{a}{\\sqrt{3}}$","$a$","$\\dfrac{a\\sqrt{2}}{2}$"], a: 0 },
+      { q: "Điều kiện để $\\sqrt{3-2x}$ có nghĩa là:", options: ["$x < \\dfrac{3}{2}$","$x \\leq \\dfrac{3}{2}$","$x > \\dfrac{3}{2}$","$x \\geq \\dfrac{3}{2}$"], a: 1 },
+      { q: "Hệ phương trình $\\begin{cases}2x-y=3 \\\\ x+2y=4\\end{cases}$ có nghiệm:", options: ["$(2;1)$","$(1;2)$","$(3;4)$","$(0;-3)$"], a: 0 },
+      { q: "Tính $\\dfrac{\\sqrt{6}+\\sqrt{10}}{\\sqrt{2}}$:", options: ["$\\sqrt{3}+\\sqrt{5}$","$\\sqrt{8}$","$\\sqrt{4}$","$3+5$"], a: 0 },
+      { q: "Hình nào sau đây có trục đối xứng?", options: ["Hình bình hành bất kỳ","Hình thang vuông","Hình thang cân","Tứ giác bất kỳ"], a: 2 },
+      { q: "Tính: $(\\sqrt{3}-1)(\\sqrt{3}+1)$:", options: ["$4$","$2$","$0$","$\\sqrt{3}$"], a: 1 },
+      { q: "Nghiệm lớn hơn của $x^2 - 7x + 12 = 0$ là:", options: ["$3$","$4$","$5$","$12$"], a: 1 },
+      { q: "Đường thẳng qua $M(1;-1)$ và $N(3;3)$ có hệ số góc:", options: ["$2$","$-2$","$1$","$4$"], a: 0 }
+    ]},
+    6: { time: 45, questions: [
+      { q: "Giá trị của $M = \\sin^2 35° + \\sin^2 55°$ là:", options: ["$0$","$1$","$2$","$0.5$"], a: 1 },
+      { q: "Phương trình nào có hai nghiệm trái dấu?", options: ["$x^2-3x+2=0$","$x^2+x+1=0$","$x^2-2x-3=0$","$2x^2+5x+3=0$"], a: 2 },
+      { q: "Tính $A = \\cos^2 40° + \\cos^2 50°$:", options: ["$0$","$1$","$2$","$\\sqrt{2}$"], a: 1 },
+      { q: "Rút gọn: $2\\sqrt{5} - \\sqrt{20} + 3\\sqrt{45}$:", options: ["$9\\sqrt{5}$","$7\\sqrt{5}$","$\\sqrt{5}$","$6\\sqrt{5}$"], a: 0 },
+      { q: "Phương trình $2x^2 - 5x + 2 = 0$ có tích hai nghiệm là:", options: ["$2.5$","$1$","$2$","$-1$"], a: 1 },
+      { q: "Cho đường tròn $(O; 5)$ và dây $AB$ cách tâm $3$ cm. Độ dài dây $AB$ là:", options: ["$4$ cm","$6$ cm","$8$ cm","$10$ cm"], a: 2 },
+      { q: "Hệ phương trình $\\begin{cases}x+y=3\\\\x-y=1\\end{cases}$ có nghiệm là:", options: ["$(1;2)$","$(2;1)$","$(3;0)$","$(0;3)$"], a: 1 },
+      { q: "Tỉ số $\\tan 45°$ bằng:", options: ["$0$","$0.5$","$1$","$\\sqrt{2}$"], a: 2 },
+      { q: "Diện tích mặt cầu bán kính $R=3$ cm là:", options: ["$12\\pi$","$36\\pi$","$18\\pi$","$9\\pi$"], a: 1 },
+      { q: "Biệt thức $\\Delta$ của $x^2 - 4x + 4 = 0$ là:", options: ["$0$","$4$","$16$","$8$"], a: 0 },
+      { q: "Đường thẳng $y = ax + b$ qua $A(0;1)$ và $B(1;0)$ có phương trình là:", options: ["$y = x+1$","$y = -x+1$","$y = x-1$","$y = -x-1$"], a: 1 },
+      { q: "Tính $\\sqrt{3} \\cdot \\sqrt{12}$:", options: ["$6$","$\\sqrt{36}=6$","$4\\sqrt{3}$","Cả A và B"], a: 3 },
+      { q: "Số nghiệm nguyên của bất phương trình $|x| < 3$:", options: ["$5$","$6$","$4$","$3$"], a: 0 },
+      { q: "Nếu $\\dfrac{a}{b} = \\dfrac{c}{d}$ thì:", options: ["$ad = bc$","$ac = bd$","$a+b=c+d$","$a-c=b-d$"], a: 0 },
+      { q: "Với $x > 0$, biểu thức $\\left(\\sqrt{x} - \\dfrac{1}{\\sqrt{x}}\\right)^2$ bằng:", options: ["$x + \\dfrac{1}{x} - 2$","$x - 2 + \\dfrac{1}{x}$","Cả A và B","$x - \\dfrac{1}{x}$"], a: 2 },
+      { q: "Tam giác $ABC$ có $\\angle A = 90°$, $\\angle B = 30°$, $BC = 10$ cm. $AC = ?$", options: ["$5$ cm","$5\\sqrt{3}$ cm","$10\\sqrt{3}$ cm","$\\dfrac{10}{\\sqrt{3}}$ cm"], a: 0 },
+      { q: "Bao nhiêu giá trị nguyên của $x$ thỏa $-3 < x \\leq 2$?", options: ["$5$","$6$","$4$","$3$"], a: 0 },
+      { q: "Tính $P = \\dfrac{1}{1+\\sqrt{2}} + \\dfrac{1}{\\sqrt{2}+\\sqrt{3}} + \\dfrac{1}{\\sqrt{3}+2}$:", options: ["$1$","$\\sqrt{3}-1$","$2-\\sqrt{2}$","$3-\\sqrt{2}$"], a: 0 },
+      { q: "Đường tròn ngoại tiếp tam giác vuông có đường kính là:", options: ["Cạnh góc vuông lớn hơn","Cạnh huyền","Đường cao","Trung tuyến"], a: 1 },
+      { q: "Tổng các nghiệm của $x^2 - 3x + 2 = 0$ là:", options: ["$2$","$3$","$-3$","$5$"], a: 1 }
+    ]},
+    7: { time: 45, questions: [
+      { q: "Tính $S = 1 + 2 + 3 + ... + 100$:", options: ["$4950$","$5050$","$5000$","$10000$"], a: 1 },
+      { q: "Bất phương trình $3x + 1 > 7$ có nghiệm:", options: ["$x > 2$","$x < 2$","$x \\geq 2$","$x > \\dfrac{8}{3}$"], a: 0 },
+      { q: "Khai triển $(2x + 3)^2$:", options: ["$4x^2 + 9$","$4x^2 + 12x + 9$","$4x^2 + 6x + 9$","$2x^2 + 9$"], a: 1 },
+      { q: "Hai tam giác $ABC$ và $A'B'C'$ đồng dạng. Tỉ số chu vi bằng tỉ số:", options: ["Diện tích","Bình phương cạnh tương ứng","Cạnh tương ứng","Căn tỉ số diện tích"], a: 2 },
+      { q: "Phương trình $\\sqrt{2x+1} = x-1$ có nghiệm là:", options: ["$x=4$","$x=0$","$x=0$ và $x=4$","Vô nghiệm"], a: 0 },
+      { q: "Tổng hai đường chéo hình thoi cạnh $5$, một đường chéo dài $8$. Đường chéo kia:", options: ["$6$","$3$","$4$","$5$"], a: 0 },
+      { q: "Nếu $x = \\sqrt{7-4\\sqrt{3}}$ thì $x = $:", options: ["$2-\\sqrt{3}$","$\\sqrt{3}-2$","$\\sqrt{7}-2$","$2+\\sqrt{3}$"], a: 0 },
+      { q: "Tập nghiệm $S$ của $x^2 - 4 = 0$ là:", options: ["$\\{2\\}$","$\\{-2\\}$","$\\{-2; 2\\}$","$\\varnothing$"], a: 2 },
+      { q: "Tam giác $ABC$ có các cạnh $a=3$, $b=4$, $c=5$. $\\cos A$ bằng:", options: ["$0$","$1$","$\\dfrac{4}{5}$","$\\dfrac{3}{4}$"], a: 0 },
+      { q: "Với $a>0$, $b>0$: $\\dfrac{a-b}{\\sqrt{a}-\\sqrt{b}}$ bằng:", options: ["$\\sqrt{a}+\\sqrt{b}$","$\\sqrt{a}-\\sqrt{b}$","$a+b$","$\\sqrt{ab}$"], a: 0 },
+      { q: "Đồ thị hàm số $y = 3$ song song với:", options: ["Trục $Oy$","Trục $Ox$","Đường $y=x$","Không song song với gì"], a: 1 },
+      { q: "Tính diện tích hình bình hành cạnh $6$, chiều cao $4$:", options: ["$10$","$24$","$20$","$12$"], a: 1 },
+      { q: "Giá trị nào sau đây bằng $\\dfrac{\\sin\\alpha}{\\cos\\alpha}$?", options: ["$\\tan\\alpha$","$\\cot\\alpha$","$1$","$\\sin 2\\alpha$"], a: 0 },
+      { q: "Nếu $f(x) = 3x - 2$ thì $f(f(2)) = $:", options: ["$10$","$4$","$12$","$8$"], a: 0 },
+      { q: "Điều kiện $a > b$ và $c > 0$ suy ra:", options: ["$ac < bc$","$ac > bc$","$ac = bc$","Không kết luận được"], a: 1 },
+      { q: "Rút gọn $\\dfrac{x^2-1}{x^2+x} \\div \\dfrac{x-1}{x}$:", options: ["$1$","$\\dfrac{x+1}{x}$","$\\dfrac{1}{x+1}$","$x+1$"], a: 0 },
+      { q: "Số tam giác có thể đặt vào đường tròn bán kính $R=5$ có cạnh $8, 6, ?$ (vuông):", options: ["$7$","$10$","$13$","$12$"], a: 1 },
+      { q: "Cạnh huyền của tam giác vuông có $\\sin B = 0.6$ và một cạnh góc vuông $BC = 9$:", options: ["$15$","$12$","$18$","$10$"], a: 0 },
+      { q: "Tích hai số nguyên âm là:", options: ["Luôn âm","Luôn dương","Có thể âm hoặc dương","Luôn bằng 0"], a: 1 },
+      { q: "Khai triển $(x-2)(x^2+2x+4)$:", options: ["$x^3-8$","$x^3+8$","$x^3-4x$","$x^3+4$"], a: 0 }
+    ]},
+    8: { time: 45, questions: [
+      { q: "Giải bất phương trình $\\dfrac{x-1}{2} > \\dfrac{x+1}{3}$:", options: ["$x > 5$","$x < 5$","$x > -5$","$x < -5$"], a: 0 },
+      { q: "Đồ thị $y = 2x^2$ có điểm đặc biệt là:", options: ["Đỉnh $(0;0)$, bề lõm xuống","Đỉnh $(0;0)$, bề lõm lên","Đỉnh $(1;2)$","Không có đỉnh"], a: 1 },
+      { q: "Rút gọn $\\dfrac{\\sqrt{6}+\\sqrt{14}}{\\sqrt{2}+\\sqrt{7}} \\cdot \\dfrac{1}{\\sqrt{3}}$:", options: ["$1$","$\\sqrt{2}$","$\\dfrac{\\sqrt{6}}{3}$","$\\dfrac{2\\sqrt{3}}{3}$"], a: 0 },
+      { q: "Một cạnh hình vuông tăng $10\\%$. Diện tích tăng:", options: ["$10\\%$","$20\\%$","$21\\%$","$100\\%$"], a: 2 },
+      { q: "Hai tiếp tuyến tại $A$ và $B$ gặp nhau tại $P$, $PA = 6$. $PB = ?$", options: ["$3$","$6$","$12$","$36$"], a: 1 },
+      { q: "Tính $\\sqrt{48} + \\sqrt{75} - \\sqrt{27}$:", options: ["$4\\sqrt{3}$","$6\\sqrt{3}$","$2\\sqrt{3}$","$8\\sqrt{3}$"], a: 1 },
+      { q: "Phương trình $ax^2 + bx + c = 0$ vô nghiệm khi:", options: ["$\\Delta > 0$","$\\Delta = 0$","$\\Delta < 0$","$a = 0$"], a: 2 },
+      { q: "Cho $ABC$ vuông tại $C$, $AC = 3$, $BC = 4$. $\\tan A = ?$", options: ["$\\dfrac{3}{4}$","$\\dfrac{4}{3}$","$\\dfrac{4}{5}$","$\\dfrac{3}{5}$"], a: 1 },
+      { q: "Rút gọn $(a+b)^2 - (a-b)^2$:", options: ["$4ab$","$4a^2$","$4b^2$","$2ab$"], a: 0 },
+      { q: "Tìm $m$ để phương trình $x^2 - 2x + m = 0$ có hai nghiệm phân biệt:", options: ["$m < 1$","$m > 1$","$m = 1$","$m \\leq 1$"], a: 0 },
+      { q: "Số cạnh của hình đa giác có tổng góc trong $= 1080°$ là:", options: ["$6$","$7$","$8$","$9$"], a: 2 },
+      { q: "Hàm số $y = \\sqrt{9-x^2}$ có tập xác định:", options: ["$[-3;3]$","$(-3;3)$","$\\mathbb{R}$","$[0;3]$"], a: 0 },
+      { q: "Nếu $3^x = 9$ thì $x = $:", options: ["$1$","$2$","$3$","$9$"], a: 1 },
+      { q: "Đường thẳng $y = -3x + 6$ cắt trục $Oy$ tại:", options: ["$(0;6)$","$(2;0)$","$(6;0)$","$(0;-3)$"], a: 0 },
+      { q: "Đường thẳng $y = -3x + 6$ cắt trục $Ox$ tại:", options: ["$(0;6)$","$(2;0)$","$(6;0)$","$(0;-3)$"], a: 1 },
+      { q: "Diện tích xung quanh hình trụ $r=2$, $h=5$ ($\\pi=3.14$):", options: ["$62.8$ cm²","$31.4$ cm²","$25.12$ cm²","$125.6$ cm²"], a: 0 },
+      { q: "Cho hàm số $y = 2x + 3$. Giá trị $x$ để $y = 7$ là:", options: ["$x=1$","$x=2$","$x=5$","$x=4$"], a: 1 },
+      { q: "Rút gọn $\\dfrac{a^2-9}{a-3}$ ($a \\neq 3$):", options: ["$a-3$","$a+3$","$a^2+3$","$3$"], a: 1 },
+      { q: "Trong tam giác $ABC$ có $\\angle B = 90°$. Kết luận nào sau đây đúng?", options: ["$BC > AC$","$AB > AC$","$AC > AB$","$AC > BC$"], a: 2 },
+      { q: "Giá trị của $2^{10}$ là:", options: ["$20$","$512$","$1024$","$100$"], a: 2 }
+    ]},
+    9: { time: 45, questions: [
+      { q: "Cho đường tròn $(O; 5$ cm$)$ và dây $AB$ cách tâm $3$ cm. $AB = ?$", options: ["$4$ cm","$6$ cm","$8$ cm","$10$ cm"], a: 2 },
+      { q: "Tích hai nghiệm của $2x^2 - 5x + 2 = 0$ là:", options: ["$2.5$","$1$","$2$","$-1$"], a: 1 },
+      { q: "Rút gọn $\\left(\\sqrt{5}-2\\right)\\left(\\sqrt{5}+2\\right)$:", options: ["$1$","$9$","$\\sqrt{5}$","$3$"], a: 0 },
+      { q: "Tìm $x$: $|x-3| = 5$:", options: ["$x = 8$","$x = -2$","$x = 8$ hoặc $x = -2$","$x = 2$"], a: 2 },
+      { q: "Hàm số $y = \\dfrac{1}{x}$ đồng biến trên:", options: ["$(0;+\\infty)$","$(-\\infty;0)$","Cả hai nửa trục","Không đồng biến trên bất kỳ khoảng nào"], a: 3 },
+      { q: "Tọa độ giao điểm hai đường thẳng $y=x+1$ và $y=3-x$:", options: ["$(1;2)$","$(2;3)$","$(3;4)$","$(0;1)$"], a: 0 },
+      { q: "Hình nón có $r=3$, $h=4$. Thể tích ($\\pi=3.14$):", options: ["$37.68$ cm³","$75.36$ cm³","$56.52$ cm³","$25.12$ cm³"], a: 0 },
+      { q: "Cho $\\sin\\alpha = \\dfrac{\\sqrt{2}}{2}$. Góc $\\alpha$ nhọn bằng:", options: ["$30°$","$45°$","$60°$","$90°$"], a: 1 },
+      { q: "Tổng bình phương hai số: $a^2+b^2 = (a+b)^2 - ?$", options: ["$2ab$","$ab$","$(a-b)^2$","$4ab$"], a: 0 },
+      { q: "Khai triển $(x+2)^3$:", options: ["$x^3+6x^2+12x+8$","$x^3+8$","$x^3+2x^2+4x+8$","$x^3+4x^2+4x+8$"], a: 0 },
+      { q: "Trong mặt phẳng tọa độ, trung điểm của $A(-2;4)$ và $B(6;-2)$:", options: ["$(2;1)$","$(4;2)$","$(2;3)$","$(1;2)$"], a: 0 },
+      { q: "Điều kiện để ba điểm thẳng hàng là:", options: ["Cùng tọa độ x","Vectơ $\\overrightarrow{AB}$ và $\\overrightarrow{AC}$ cùng phương","Cùng khoảng cách","Không có điều kiện"], a: 1 },
+      { q: "Giải phương trình $\\sqrt{x^2-1} = 2$:", options: ["$x = \\sqrt{5}$","$x = -\\sqrt{5}$","$x = \\pm\\sqrt{5}$","Vô nghiệm"], a: 2 },
+      { q: "Diện tích hình thoi có hai đường chéo $6$ và $8$ là:", options: ["$48$ cm²","$24$ cm²","$14$ cm²","$12$ cm²"], a: 1 },
+      { q: "Nếu $x = \\log_3 81$ thì $x = $:", options: ["$3$","$4$","$9$","$27$"], a: 1 },
+      { q: "Số tiếp tuyến của đường tròn $(O)$ kẻ được từ điểm nằm bên trong đường tròn:", options: ["$0$","$1$","$2$","vô số"], a: 0 },
+      { q: "Rút gọn $\\dfrac{4x^2-1}{2x+1}$ ($x\\neq -\\tfrac{1}{2}$):", options: ["$2x-1$","$2x+1$","$4x-1$","$2x$"], a: 0 },
+      { q: "Cho tam giác $ABC$ cân tại $A$, $BC=8$, $AB=5$. Diện tích tam giác:", options: ["$12$ cm²","$16$ cm²","$20$ cm²","$24$ cm²"], a: 0 },
+      { q: "Phương trình $x^4 - 5x^2 + 4 = 0$ có bao nhiêu nghiệm thực?", options: ["$2$","$3$","$4$","$0$"], a: 2 },
+      { q: "Tính $M = \\dfrac{\\sqrt{2}-1}{\\sqrt{2}+1} + \\dfrac{\\sqrt{2}+1}{\\sqrt{2}-1}$:", options: ["$6$","$4$","$2$","$1$"], a: 0 }
+    ]},
+    10: { time: 45, questions: [
+      { q: "Hệ phương trình $\\begin{cases}x+y=3\\\\x-y=1\\end{cases}$ có nghiệm là:", options: ["$(1;2)$","$(2;1)$","$(3;0)$","$(0;3)$"], a: 1 },
+      { q: "Tỉ số $\\tan 45°$ bằng:", options: ["$0$","$0.5$","$1$","$\\sqrt{2}$"], a: 2 },
+      { q: "Tính $\\sqrt{2+\\sqrt{3}} \\cdot \\sqrt{2-\\sqrt{3}}$:", options: ["$1$","$\\sqrt{2}$","$\\sqrt{4-3}=1$","$2$"], a: 0 },
+      { q: "Với $a,b > 0$, bất đẳng thức nào sau đây luôn đúng?", options: ["$\\sqrt{a+b} \\geq \\sqrt{a}+\\sqrt{b}$","$\\sqrt{a}+\\sqrt{b} \\geq \\sqrt{a+b}$","$\\sqrt{ab} \\geq a+b$","$a^2+b^2 \\leq 2ab$"], a: 1 },
+      { q: "Phương trình $\\dfrac{x+1}{x-2} = \\dfrac{x-1}{x+2}$ có nghiệm:", options: ["$x=0$","$x=1$","Vô nghiệm","$x=\\pm 1$"], a: 0 },
+      { q: "Diện tích hình bình hành có cạnh $a = 6$, cạnh $b = 5$, góc $60°$:", options: ["$15\\sqrt{3}$","$30$","$15$","$18$"], a: 0 },
+      { q: "Nghiệm của $x^2 + 4 = 0$ trong tập số thực:", options: ["$x = 2$","$x = -2$","$x = \\pm 2$","Vô nghiệm"], a: 3 },
+      { q: "Đường tròn $(O)$ và đường thẳng $d$ cắt nhau khi khoảng cách từ $O$ đến $d$ là $h$:", options: ["$h = R$","$h > R$","$h < R$","$h = 0$"], a: 2 },
+      { q: "Hàm số $y = x^2 - 2x$ có giá trị nhỏ nhất tại $x = ?$", options: ["$x = 0$","$x = 1$","$x = 2$","$x = -1$"], a: 1 },
+      { q: "Tập nghiệm của bất phương trình $x^2 - 9 > 0$ là:", options: ["$(-3;3)$","$(-\\infty;-3) \\cup (3;+\\infty)$","$[-3;3]$","$x > 3$"], a: 1 },
+      { q: "Cho $y = 2\\sin x$. Giá trị lớn nhất của $y$ là:", options: ["$1$","$2$","$-2$","$\\pi$"], a: 1 },
+      { q: "Rút gọn $\\dfrac{x^3-8}{x^2+2x+4}$ ($x \\neq -2$, điều kiện khác):", options: ["$x-2$","$x+2$","$x^2-2x+4$","$x^2+4$"], a: 0 },
+      { q: "Số đường chéo của hình $8$ cạnh là:", options: ["$16$","$20$","$24$","$8$"], a: 1 },
+      { q: "Tính $3^2 + 4^2 = $:", options: ["$5^2$","$7^2$","$25$","Cả A và C"], a: 3 },
+      { q: "Trong tam giác, đường nào sau đây luôn nằm bên trong?", options: ["Đường cao","Đường trung tuyến","Đường phân giác","Tất cả đều đúng"], a: 3 },
+      { q: "Cho $P = \\dfrac{2\\sqrt{x}}{\\sqrt{x}+1}$ với $x \\geq 0$. Khi $P = 1$, $x = ?$", options: ["$0$","$1$","$4$","$9$"], a: 1 },
+      { q: "Tổng tất cả các góc ngoài của một đa giác lồi bằng:", options: ["$180°$","$360°$","$540°$","Phụ thuộc vào đa giác"], a: 1 },
+      { q: "Cho tam giác $ABC$ có $\\angle A = 60°$, $b = 4$, $c = 6$. $a^2 = ?$", options: ["$28$","$52-24 = 28$","$52 - 24\\cos 60° = 40$","$76$"], a: 2 },
+      { q: "Tính $\\left|\\sqrt{3} - 2\\right| + \\left|\\sqrt{3} + 2\\right|$:", options: ["$4$","$2\\sqrt{3}$","$2-\\sqrt{3}+\\sqrt{3}+2=4$","$0$"], a: 0 },
+      { q: "Hệ số $a$ của parabol $y = ax^2$ (với $a \\neq 0$): parabol lõm lên khi:", options: ["$a < 0$","$a > 0$","$a = 0$","$a = 1$"], a: 1 }
+    ]}
+  },
+  english: {
+    1: { time: 45, questions: [
+      { q: "If the weather _____ good, we will go camping.", options: ["is","was","were","has been"], a: 0 },
+      { q: "Choose the word with different pronunciation: watch<u>ed</u>, stop<u>ped</u>, work<u>ed</u>, need<u>ed</u>.", options: ["watched","stopped","worked","needed"], a: 3 },
+      { q: "I suggest _____ public transport to reduce pollution.", options: ["use","to use","using","used"], a: 2 },
+      { q: "She _____ to the market every morning.", options: ["go","goes","going","gone"], a: 1 },
+      { q: "He has lived in Hanoi _____ 2010.", options: ["since","for","in","from"], a: 0 },
+      { q: "The book _____ by millions of people worldwide.", options: ["read","reads","is read","was reading"], a: 2 },
+      { q: "_____ you ever _____ to Japan?", options: ["Have / gone","Did / go","Have / went","Do / go"], a: 0 },
+      { q: "He is _____ honest man.", options: ["a","an","the","Ø"], a: 1 },
+      { q: "She asked me what my name _____.", options: ["is","was","were","be"], a: 1 },
+      { q: "The teacher told the students _____ quiet.", options: ["be","to be","being","been"], a: 1 },
+      { q: "This film is _____ interesting than the last one.", options: ["more","most","much","many"], a: 0 },
+      { q: "We need to _____ energy to protect the environment.", options: ["safe","saving","save","saved"], a: 2 },
+      { q: "Choose the correct spelling:", options: ["enviroment","environment","enviroment","envirnoment"], a: 1 },
+      { q: "He didn't come to school _____ he was sick.", options: ["so","although","but","because"], a: 3 },
+      { q: "By the time she arrived, the movie _____ started.", options: ["has","had","have","was"], a: 1 },
+      { q: "I'd rather _____ at home than go out.", options: ["stay","staying","stayed","to stay"], a: 0 },
+      { q: "The children _____ playing football when it rained.", options: ["were","are","was","be"], a: 0 },
+      { q: "She is the girl _____ mother is a doctor.", options: ["who","which","whose","whom"], a: 2 },
+      { q: "We _____ for the bus for 30 minutes when it finally arrived.", options: ["waited","have waited","had been waiting","are waiting"], a: 2 },
+      { q: "_____ is the distance from your house to school?", options: ["How far","How long","How much","How many"], a: 0 }
+    ]},
+    2: { time: 45, questions: [
+      { q: "The woman _____ lives next door is very friendly.", options: ["which","who","whom","whose"], a: 1 },
+      { q: "Mount Pinatubo erupted _____ 1991.", options: ["in","on","at","for"], a: 0 },
+      { q: "My father _____ smoke, but he quit two years ago.", options: ["used to","is used to","was used to","use to"], a: 0 },
+      { q: "She is looking forward _____ you.", options: ["to meet","meet","meeting","to meeting"], a: 3 },
+      { q: "If I were rich, I _____ travel around the world.", options: ["will","would","should","shall"], a: 1 },
+      { q: "The boy _____ by the dog was taken to hospital.", options: ["biting","bit","bitten","bite"], a: 2 },
+      { q: "Tom: 'Thank you so much!' — Jerry: '_____'", options: ["You're welcome.","That's right.","Never mind.","All right."], a: 0 },
+      { q: "She _____ her keys and couldn't get in.", options: ["looses","has lost","lost","is losing"], a: 2 },
+      { q: "Choose the sentence with correct grammar:", options: ["He can speaks English.","He can to speak English.","He can speak English.","He cans speak English."], a: 2 },
+      { q: "The more you study, _____.", options: ["the smarter you become","you become smarter","you will become smart","the more smart you are"], a: 0 },
+      { q: "Environmental pollution _____ a serious global problem.", options: ["become","becomes","is becoming","Cả B và C"], a: 3 },
+      { q: "She apologized _____ being late.", options: ["for","about","of","to"], a: 0 },
+      { q: "_____ he is young, he is very talented.", options: ["Because","Despite","Although","However"], a: 2 },
+      { q: "This bridge _____ in 1990.", options: ["built","is built","was built","has been built"], a: 2 },
+      { q: "I don't know _____ to do next.", options: ["what","how","which","that"], a: 0 },
+      { q: "She had her hair _____ at the salon.", options: ["cut","cuts","cutting","to cut"], a: 0 },
+      { q: "He works very hard. _____, he always gets good grades.", options: ["However","Therefore","Although","In spite of"], a: 1 },
+      { q: "Choose the odd one out: cat, dog, bird, table", options: ["cat","dog","bird","table"], a: 3 },
+      { q: "The students are excited _____ the upcoming trip.", options: ["of","in","about","for"], a: 2 },
+      { q: "They _____ lunch when I arrived.", options: ["have","had","were having","are having"], a: 2 }
+    ]},
+    3: { time: 45, questions: [
+      { q: "She _____ English for 5 years before she moved to London.", options: ["learns","has learned","had learned","is learning"], a: 2 },
+      { q: "He is the _____ student in my class.", options: ["good","better","best","goodest"], a: 2 },
+      { q: "We should _____ more trees to reduce pollution.", options: ["plants","planting","planted","plant"], a: 3 },
+      { q: "Choose the word whose underlined part is pronounced differently: <u>ch</u>air, <u>ch</u>emist, <u>ch</u>ild, <u>ch</u>urch", options: ["chair","chemist","child","church"], a: 1 },
+      { q: "She said that she _____ never been to Paris.", options: ["has","have","had","having"], a: 2 },
+      { q: "A _____ is a person who studies plants.", options: ["geologist","botanist","biologist","zoologist"], a: 1 },
+      { q: "I prefer reading books _____ watching TV.", options: ["than","to","rather","instead"], a: 1 },
+      { q: "He _____ to music every evening after dinner.", options: ["listen","listens","is listening","has listened"], a: 1 },
+      { q: "We were told that the Earth _____ round.", options: ["is","was","were","has been"], a: 0 },
+      { q: "The phone _____ while I was cooking.", options: ["rang","ring","is ringing","was ringing"], a: 0 },
+      { q: "You should _____ a doctor about that pain.", options: ["see","sees","seeing","seen"], a: 0 },
+      { q: "_____ an umbrella in case it rains.", options: ["Take","Taking","Taken","To take"], a: 0 },
+      { q: "Choose the correct word: The accident was _____.", options: ["terrify","terrifying","terrified","terrible"], a: 3 },
+      { q: "He is not _____ to stay up late.", options: ["allow","allowing","allowed","allows"], a: 2 },
+      { q: "If it _____ tomorrow, we won't have a picnic.", options: ["rains","rained","will rain","would rain"], a: 0 },
+      { q: "She speaks English _____ than her brother.", options: ["more fluent","more fluently","most fluently","fluently"], a: 1 },
+      { q: "The government _____ many steps to protect the environment.", options: ["have taken","has taken","took","is taking"], a: 1 },
+      { q: "Choose the word with stress on the second syllable:", options: ["'garden","be'gin","'happy","'flower"], a: 1 },
+      { q: "I can't find my wallet. I think I _____ it at home.", options: ["leave","left","have left","am leaving"], a: 2 },
+      { q: "He suggested _____ to the cinema.", options: ["going","go","to go","went"], a: 0 }
+    ]},
+    4: { time: 45, questions: [
+      { q: "I wish I _____ a new car now.", options: ["have","had","will have","am having"], a: 1 },
+      { q: "The children are interested _____ reading comic books.", options: ["on","at","in","with"], a: 2 },
+      { q: "He _____ be at home. His car is in the garage.", options: ["must","might","could","should"], a: 0 },
+      { q: "This is the house _____ I was born.", options: ["that","which","where","when"], a: 2 },
+      { q: "She has been working here _____ three years.", options: ["since","for","during","from"], a: 1 },
+      { q: "The project _____ by the end of the month.", options: ["will complete","will be completed","is completing","completes"], a: 1 },
+      { q: "He told me not _____ late.", options: ["be","to be","being","was"], a: 1 },
+      { q: "The film was _____ that everyone fell asleep.", options: ["so boring","such boring","too boring","very boring"], a: 0 },
+      { q: "I'm not used _____ in such a noisy place.", options: ["work","to work","working","to working"], a: 3 },
+      { q: "Peter: 'Sorry, I'm late!' — Mary: '_____'", options: ["You're late!","Never mind.","So am I.","That's fine!"], a: 1 },
+      { q: "The word 'BEAUTIFUL' has _____ syllables.", options: ["2","3","4","5"], a: 1 },
+      { q: "He _____ a book when the lights went out.", options: ["reads","read","was reading","is reading"], a: 2 },
+      { q: "She is very good _____ maths.", options: ["in","at","for","on"], a: 1 },
+      { q: "Choose the passive: 'People speak English all over the world.'", options: ["English is spoken all over the world.","English speaks all over the world.","English was spoken all over the world.","English has spoken all over the world."], a: 0 },
+      { q: "I _____ him since we were in primary school.", options: ["know","knew","have known","had known"], a: 2 },
+      { q: "She went to bed early _____ she was tired.", options: ["because","although","however","despite"], a: 0 },
+      { q: "Choose the synonym of 'ENORMOUS':", options: ["tiny","huge","average","common"], a: 1 },
+      { q: "They _____ each other for 5 years before getting married.", options: ["know","knew","have known","had known"], a: 3 },
+      { q: "Choose the antonym of 'SHALLOW':", options: ["wide","narrow","deep","high"], a: 2 },
+      { q: "If I had more time, I _____ help you.", options: ["will","would","should","shall"], a: 1 }
+    ]},
+    5: { time: 45, questions: [
+      { q: "_____ she was tired, she finished her homework.", options: ["Because","Although","Despite","Since"], a: 1 },
+      { q: "You don't like coffee, _____?", options: ["do you","don't you","are you","aren't you"], a: 0 },
+      { q: "He _____ working here since 2015.", options: ["is","has been","was","had been"], a: 1 },
+      { q: "The match had already started _____ we arrived.", options: ["when","before","after","until"], a: 0 },
+      { q: "Choose the word with different stress: 'happy, 'wonder, be'lieve, 'picture", options: ["happy","wonder","believe","picture"], a: 2 },
+      { q: "The new shopping center _____ next year.", options: ["opens","is opened","will be opened","is opening"], a: 2 },
+      { q: "She was made _____ the dishes every day.", options: ["wash","washing","to wash","washed"], a: 2 },
+      { q: "Not only _____ the test but she also got the highest score.", options: ["she passed","did she pass","she did pass","has she passed"], a: 1 },
+      { q: "Choose the correctly spelled word:", options: ["accomodation","accommodation","acommodation","accomodation"], a: 1 },
+      { q: "He is _____ to carry that heavy box alone.", options: ["too weak","weak enough","enough weak","so weak"], a: 0 },
+      { q: "She _____ to be a nurse when she was little.", options: ["wanted","wants","was wanting","had wanted"], a: 0 },
+      { q: "I find it difficult _____ early every morning.", options: ["get up","getting up","to get up","got up"], a: 2 },
+      { q: "Choose the correct preposition: She arrived _____ the airport at noon.", options: ["in","at","on","to"], a: 1 },
+      { q: "He would have passed if he _____ harder.", options: ["studied","had studied","would study","studies"], a: 1 },
+      { q: "The baby _____ when the telephone rang.", options: ["slept","is sleeping","was sleeping","sleeps"], a: 2 },
+      { q: "She is _____ beautiful that everyone looks at her.", options: ["very","too","so","such"], a: 2 },
+      { q: "He reminded me _____ bring my ID card.", options: ["to","of","for","about"], a: 0 },
+      { q: "It's no use _____ about the past.", options: ["worry","worried","to worry","worrying"], a: 3 },
+      { q: "The weather report says it _____ rain tomorrow.", options: ["will","would","shall","might"], a: 3 },
+      { q: "We haven't seen each other _____ last summer.", options: ["for","since","during","from"], a: 1 }
+    ]},
+    6: { time: 45, questions: [
+      { q: "The city _____ we visited last summer was very beautiful.", options: ["who","which","where","when"], a: 1 },
+      { q: "Rice _____ in many tropical countries.", options: ["grows","is grown","grow","are grown"], a: 1 },
+      { q: "My brother, _____ is a doctor, lives in London.", options: ["who","which","whom","that"], a: 0 },
+      { q: "She looked _____ after her long flight.", options: ["tired","tiredly","tire","tiring"], a: 0 },
+      { q: "He has been studying _____ six hours without a break.", options: ["since","for","during","in"], a: 1 },
+      { q: "The reason _____ she left is still unknown.", options: ["which","that","why","when"], a: 2 },
+      { q: "He speaks English as if he _____ a native speaker.", options: ["is","was","were","has been"], a: 2 },
+      { q: "No sooner _____ she entered the room than everyone stood up.", options: ["has","had","did","was"], a: 1 },
+      { q: "I'd prefer to stay indoors _____ the rain.", options: ["because","because of","due to","Cả B và C"], a: 3 },
+      { q: "She was _____ moved by the story that she cried.", options: ["very","quite","so","too"], a: 2 },
+      { q: "The exhibition _____ by over 500 people yesterday.", options: ["visited","was visited","is visited","has been visited"], a: 1 },
+      { q: "Choose the correct form: He _____ (not see) her for two years.", options: ["hasn't seen","didn't see","doesn't see","hadn't seen"], a: 0 },
+      { q: "The students _____ the exam are very nervous.", options: ["take","takes","taking","taken"], a: 2 },
+      { q: "_____ the traffic, we managed to arrive on time.", options: ["Despite","Although","Because","In spite"], a: 0 },
+      { q: "He was too proud _____ for help.", options: ["ask","asking","to ask","asked"], a: 2 },
+      { q: "She got the job _____ having little experience.", options: ["although","in spite of","because","however"], a: 1 },
+      { q: "Which sentence is correct?", options: ["I am agree with you.","I agree to you.","I agree with you.","I agrees with you."], a: 2 },
+      { q: "Choose the synonym of 'ESSENTIAL':", options: ["optional","necessary","additional","helpful"], a: 1 },
+      { q: "He _____ to study harder if he wants to pass.", options: ["need","needs","needn't","needed"], a: 1 },
+      { q: "They finished _____ the project report last night.", options: ["write","to write","writing","written"], a: 2 }
+    ]},
+    7: { time: 45, questions: [
+      { q: "If I _____ you, I would take that job.", options: ["am","was","were","had been"], a: 2 },
+      { q: "They _____ to the cinema every Sunday.", options: ["go","goes","going","gone"], a: 0 },
+      { q: "She wishes she _____ come to the party last night.", options: ["could","can","could have","had"], a: 2 },
+      { q: "The faster he ran, _____.", options: ["the more tired he became","he became more tired","more tired he became","the tired he became"], a: 0 },
+      { q: "He denied _____ the money.", options: ["steal","to steal","stealing","stolen"], a: 2 },
+      { q: "We are looking forward _____ you soon.", options: ["to see","seeing","to seeing","see"], a: 2 },
+      { q: "The problem _____ we were discussing yesterday has been solved.", options: ["who","that","where","when"], a: 1 },
+      { q: "She _____ to music while cooking dinner.", options: ["listen","listened","listens","is listening"], a: 3 },
+      { q: "It was _____ a difficult question that no one could answer it.", options: ["very","too","so","such"], a: 3 },
+      { q: "He insisted _____ paying for dinner.", options: ["on","in","at","of"], a: 0 },
+      { q: "The team, _____ had trained hard, lost the match.", options: ["who","which","that","whom"], a: 1 },
+      { q: "He decided _____ his own business.", options: ["start","starts","starting","to start"], a: 3 },
+      { q: "You _____ wear a seatbelt — it's the law.", options: ["might","should","must","could"], a: 2 },
+      { q: "She _____ all the food by the time guests arrived.", options: ["prepared","had prepared","was preparing","has prepared"], a: 1 },
+      { q: "He is _____ talented musician.", options: ["a","an","the","Ø"], a: 0 },
+      { q: "Choose the word whose stress differs: photo'graphy, 'camera, tele'vision, 'natural", options: ["photography","camera","television","natural"], a: 0 },
+      { q: "I remember _____ her at the party last year.", options: ["meet","to meet","meeting","met"], a: 2 },
+      { q: "The road _____ leads to the beach is very narrow.", options: ["which","that","who","Cả A và B"], a: 3 },
+      { q: "She can't stand _____ for a long time.", options: ["wait","waiting","to wait","waited"], a: 1 },
+      { q: "Both Tom and Jerry _____ students at this school.", options: ["is","are","was","were"], a: 1 }
+    ]},
+    8: { time: 45, questions: [
+      { q: "She asked me where I _____ from.", options: ["come","came","am coming","have come"], a: 1 },
+      { q: "We should use _____ bags instead of plastic ones.", options: ["reusable","reuse","used","using"], a: 0 },
+      { q: "Choose the word with the odd stress pattern: de'velop, 'beautiful, re'member, po'lite", options: ["develop","beautiful","remember","polite"], a: 1 },
+      { q: "She was the last person _____ the building last night.", options: ["leave","leaving","to leave","left"], a: 2 },
+      { q: "Tom _____ to be a great scientist one day.", options: ["hopes","is hoping","hoped","hope"], a: 0 },
+      { q: "He had _____ eaten when his friend called.", options: ["yet","already","still","just"], a: 3 },
+      { q: "Despite _____ hard, he failed the exam.", options: ["study","studied","studying","studies"], a: 2 },
+      { q: "The new policy _____ since last month.", options: ["has been implemented","was implemented","implemented","is implemented"], a: 0 },
+      { q: "She _____ here since she graduated.", options: ["works","has worked","is working","worked"], a: 1 },
+      { q: "Which sentence uses 'in spite of' correctly?", options: ["In spite of she was sick, she came.","In spite of being sick, she came.","In spite of she came sick.","In spite of her sickness she came not."], a: 1 },
+      { q: "He was surprised _____ her quick recovery.", options: ["by","of","at","with"], a: 2 },
+      { q: "Choose the correct sentence:", options: ["She looks like her mother.","She looks like as her mother.","She looks like to her mother.","She likes look her mother."], a: 0 },
+      { q: "It _____ be wrong — she never lies.", options: ["must","can't","mustn't","shouldn't"], a: 1 },
+      { q: "We _____ by the time you get home.", options: ["will leave","will have left","are leaving","leave"], a: 1 },
+      { q: "He makes me _____ every time he tells a joke.", options: ["laugh","laughing","to laugh","laughed"], a: 0 },
+      { q: "Choose the antonym of 'OPTIMISTIC':", options: ["hopeful","cheerful","pessimistic","positive"], a: 2 },
+      { q: "The accident _____ if drivers had been more careful.", options: ["wouldn't happen","hadn't happened","wouldn't have happened","won't happen"], a: 2 },
+      { q: "She is married _____ a famous actor.", options: ["with","to","for","of"], a: 1 },
+      { q: "He _____ at the meeting when the news broke.", options: ["presents","present","was presenting","had presented"], a: 2 },
+      { q: "The school asked all students _____ a form.", options: ["fill","to fill","filling","filled"], a: 1 }
+    ]},
+    9: { time: 45, questions: [
+      { q: "He drives very _____, so he never has accidents.", options: ["careful","carefully","careless","carelessly"], a: 1 },
+      { q: "It's difficult _____ this exercise.", options: ["do","doing","to do","done"], a: 2 },
+      { q: "She _____ the report before submitting it.", options: ["proofread","proofreads","has proofread","proofreading"], a: 2 },
+      { q: "He has an ability _____ people.", options: ["inspire","inspiring","to inspire","inspired"], a: 2 },
+      { q: "Choose the word with the /ɪ/ sound: machine, sit, feel, beat", options: ["machine","sit","feel","beat"], a: 1 },
+      { q: "He _____ his work. He does it twice as fast as others.", options: ["is skilled","is skillful at","is good","is able"], a: 1 },
+      { q: "She avoided _____ him after their argument.", options: ["see","seeing","to see","seen"], a: 1 },
+      { q: "She _____ when she received the sad news.", options: ["cried","cries","was crying","is crying"], a: 0 },
+      { q: "He found it hard _____ with his coworkers.", options: ["get on","getting on","to get on","gotten on"], a: 2 },
+      { q: "The news _____ very surprising to everyone.", options: ["were","was","are","is being"], a: 1 },
+      { q: "All the furniture _____ to the new apartment.", options: ["was moved","were moved","has moved","have moved"], a: 0 },
+      { q: "I would rather he _____ me the truth.", options: ["tells","tell","told","would tell"], a: 2 },
+      { q: "He is the kind of person _____ you can always count on.", options: ["which","who","whom","that"], a: 3 },
+      { q: "They _____ football for an hour when it began to rain.", options: ["play","have played","had been playing","were playing"], a: 3 },
+      { q: "She is _____ a lovely person that everyone adores her.", options: ["so","such","very","too"], a: 1 },
+      { q: "Choose the correct collocations: make a _____ about something.", options: ["complaint","solve","discuss","argument"], a: 0 },
+      { q: "He _____ to talk to the manager right now.", options: ["wants","is wanting","want","wanting"], a: 0 },
+      { q: "She has dedicated her life _____ protecting endangered species.", options: ["of","in","to","for"], a: 2 },
+      { q: "I couldn't help _____ when I heard the story.", options: ["laugh","laughing","to laugh","laughed"], a: 1 },
+      { q: "The evidence _____ that he is innocent.", options: ["suggests","suggest","are suggesting","suggested"], a: 0 }
+    ]},
+    10: { time: 45, questions: [
+      { q: "The exam was _____ than we expected.", options: ["more easy","easier","easyer","more easily"], a: 1 },
+      { q: "I _____ my old teacher for a long time.", options: ["didn't see","don't see","haven't seen","won't see"], a: 2 },
+      { q: "He _____ to the fact that he was wrong.", options: ["admitted","admits","admitting","admit"], a: 0 },
+      { q: "She _____ her bag packed when I arrived.", options: ["has","had","have","was"], a: 1 },
+      { q: "Choose the word that contains a silent letter: know, cat, dog, run", options: ["know","cat","dog","run"], a: 0 },
+      { q: "He didn't finish _____ the report until midnight.", options: ["write","writing","to write","written"], a: 1 },
+      { q: "She was disappointed that she hadn't _____ the competition.", options: ["win","winning","won","wins"], a: 2 },
+      { q: "The CEO, together with his team, _____ the project.", options: ["is reviewing","are reviewing","were reviewing","review"], a: 0 },
+      { q: "He's not used _____ in a big city.", options: ["live","living","to live","to living"], a: 3 },
+      { q: "She told her son _____ so much time online.", options: ["don't spend","not spend","not to spend","to not spending"], a: 2 },
+      { q: "_____ ten minutes early is better than arriving late.", options: ["Arriving","Arrive","To arriving","Arrived"], a: 0 },
+      { q: "The harder she tries, _____ she succeeds.", options: ["the more often","more often","the more often that","often more"], a: 0 },
+      { q: "This is the town _____ my grandmother was born.", options: ["where","which","that","who"], a: 0 },
+      { q: "He kept _____ until he solved the problem.", options: ["trying","to try","try","tried"], a: 0 },
+      { q: "Choose the correct response: 'Shall we meet at 7?' — '_____'", options: ["Yes, I shall.","That sounds great!","I should.","Yes, let's shall."], a: 1 },
+      { q: "She _____ to the gym every day since January.", options: ["goes","went","has been going","is going"], a: 2 },
+      { q: "My parents want me _____ medicine at university.", options: ["study","studying","to study","studied"], a: 2 },
+      { q: "Neither Tom nor his friends _____ about the change.", options: ["know","knows","is knowing","was knowing"], a: 0 },
+      { q: "The scientist whose research _____ published won the award.", options: ["was","were","has","have"], a: 0 },
+      { q: "We were all amazed _____ the performer's skill.", options: ["by","of","with","about"], a: 0 }
+    ]}
+  }
+};
+
+// ==========================================
+// APP STATE
+// ==========================================
+let state = {
+  subject: 'math',
+  examNum: 1,
+  questions: [],
+  answers: [],    // null = unanswered
+  current: 0,
+  timeLeft: 0,
+  timer: null,
+  submitted: false
+};
+
+// ==========================================
+// HOME SCREEN
+// ==========================================
+function switchSubject(sub) {
+  state.subject = sub;
+  document.querySelectorAll('.subject-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && sub==='math') || (i===1 && sub==='english'));
+  });
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('examGrid');
+  grid.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const ex = examDatabase[state.subject][i];
+    const card = document.createElement('div');
+    card.className = 'exam-card';
+    card.innerHTML = `
+      <div class="num">${i < 10 ? '0'+i : i}</div>
+      <div class="label">Đề số ${i}</div>
+      <div class="pills">
+        <span class="pill q">${ex.questions.length} câu</span>
+        <span class="pill t">${ex.time} ph</span>
+      </div>
+    `;
+    card.onclick = () => startExam(state.subject, i);
+    grid.appendChild(card);
+  }
+}
+
+// ==========================================
+// EXAM START
+// ==========================================
+function startExam(sub, num) {
+  state.subject = sub;
+  state.examNum = num;
+  const ex = examDatabase[sub][num];
+  state.questions = ex.questions;
+  state.answers = new Array(state.questions.length).fill(null);
+  state.current = 0;
+  state.timeLeft = ex.time * 60;
+  state.submitted = false;
+
+  const subLabel = sub === 'math' ? 'Toán học' : 'Tiếng Anh';
+  document.getElementById('sidebarTitle').textContent = `Đề ${num}`;
+  document.getElementById('sidebarSub').textContent = `${subLabel} · ${state.questions.length} câu`;
+
+  buildQNav();
+  renderQuestion();
+  updateProgress();
+  startTimer();
+  showScreen('exam');
+
+  // Re-typeset math
+  setTimeout(() => { if(window.MathJax) MathJax.typesetPromise(); }, 100);
+}
+
+// ==========================================
+// TIMER
+// ==========================================
+function startTimer() {
+  clearInterval(state.timer);
+  updateTimerDisplay();
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    updateTimerDisplay();
+    if (state.timeLeft <= 0) {
+      clearInterval(state.timer);
+      submitExam(true);
+    }
+  }, 1000);
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(state.timeLeft / 60);
+  const s = state.timeLeft % 60;
+  const str = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const timerEl = document.getElementById('timerDisplay');
+  const mobileEl = document.getElementById('mobileTimer');
+
+  let cls = '';
+  if (state.timeLeft <= 60) cls = 'danger';
+  else if (state.timeLeft <= 300) cls = 'warn';
+
+  timerEl.textContent = str;
+  timerEl.className = 'timer-value ' + cls;
+  mobileEl.textContent = str;
+  mobileEl.className = 'mobile-timer ' + cls;
+}
+
+// ==========================================
+// RENDER QUESTION
+// ==========================================
+function renderQuestion() {
+  const q = state.questions[state.current];
+  const n = state.current;
+
+  document.getElementById('qNum').textContent = `Câu ${String(n+1).padStart(2,'0')} / ${state.questions.length}`;
+  document.getElementById('qText').innerHTML = q.q;
+
+  const letters = ['A','B','C','D'];
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    if (state.answers[n] === i) btn.classList.add('selected');
+
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => selectAnswer(i);
+    container.appendChild(btn);
+  });
+
+  // Update nav button
+  const nextBtn = document.getElementById('nextBtn');
+  if (state.current === state.questions.length - 1) {
+    nextBtn.textContent = 'Câu cuối ✓';
+  } else {
+    nextBtn.textContent = 'Tiếp theo →';
+  }
+
+  // Update qnav
+  document.querySelectorAll('.qnav-btn').forEach((b, i) => {
+    b.classList.toggle('current', i === n);
+  });
+
+  // Re-typeset math for this question
+  if (window.MathJax) {
+    MathJax.typesetPromise([document.getElementById('qText'), container]);
+  }
+}
+
+function selectAnswer(idx) {
+  if (state.submitted) return;
+  state.answers[state.current] = idx;
+  renderQuestion();
+  updateProgress();
+  updateQNav();
+}
+
+// ==========================================
+// NAVIGATION
+// ==========================================
+function navigate(dir) {
+  const next = state.current + dir;
+  if (next < 0 || next >= state.questions.length) return;
+  state.current = next;
+  renderQuestion();
+}
+
+function buildQNav() {
+  const grid = document.getElementById('qnavGrid');
+  grid.innerHTML = '';
+  state.questions.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'qnav-btn';
+    btn.textContent = i + 1;
+    btn.onclick = () => { state.current = i; renderQuestion(); };
+    grid.appendChild(btn);
+  });
+}
+
+function updateQNav() {
+  document.querySelectorAll('.qnav-btn').forEach((b, i) => {
+    b.classList.remove('answered','current');
+    if (state.answers[i] !== null) b.classList.add('answered');
+    if (i === state.current) b.classList.add('current');
+  });
+}
+
+function updateProgress() {
+  const answered = state.answers.filter(a => a !== null).length;
+  const total = state.questions.length;
+  document.getElementById('progressText').textContent = `Câu ${state.current+1}/${total}`;
+  document.getElementById('answeredText').textContent = `${answered} đã trả lời`;
+  document.getElementById('progressFill').style.width = `${(answered/total)*100}%`;
+  document.getElementById('mobileProgress').textContent = `${answered}/${total}`;
+  updateQNav();
+}
+
+// ==========================================
+// SUBMIT
+// ==========================================
+function submitExam(auto = false) {
+  if (state.submitted) return;
+
+  const answered = state.answers.filter(a => a !== null).length;
+  if (!auto && answered < state.questions.length) {
+    const unanswered = state.questions.length - answered;
+    if (!confirm(`Bạn còn ${unanswered} câu chưa trả lời. Bạn có chắc muốn nộp bài không?`)) return;
+  }
+
+  clearInterval(state.timer);
+  state.submitted = true;
+
+  // Calculate score
+  let correct = 0;
+  state.questions.forEach((q, i) => {
+    if (state.answers[i] === q.a) correct++;
+  });
+
+  const wrong = state.answers.filter((a, i) => a !== null && a !== state.questions[i].a).length;
+  const skip = state.answers.filter(a => a === null).length;
+  const total = state.questions.length;
+
+  // Show result
+  document.getElementById('scoreNum').textContent = correct;
+  document.getElementById('scoreDenom').textContent = `/ ${total} câu`;
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = wrong;
+  document.getElementById('statSkip').textContent = skip;
+
+  const pct = Math.round((correct/total)*100);
+  let title, msg;
+  if (pct >= 90) { title = 'Xuất sắc! 🎉'; msg = `Bạn đạt ${pct}% — Kết quả tuyệt vời!`; }
+  else if (pct >= 70) { title = 'Khá giỏi! 👍'; msg = `Bạn đạt ${pct}% — Cố gắng thêm nhé!`; }
+  else if (pct >= 50) { title = 'Trung bình 📚'; msg = `Bạn đạt ${pct}% — Ôn tập thêm nhé.`; }
+  else { title = 'Cần cố gắng hơn 💪'; msg = `Bạn đạt ${pct}% — Đừng nản lòng!`; }
+
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultMsg').textContent = msg;
+
+  // Animate circle
+  const circumference = 439.8;
+  const circle = document.getElementById('scoreCircle');
+  const offset = circumference - (pct / 100) * circumference;
+  setTimeout(() => { circle.style.strokeDashoffset = offset; }, 100);
+
+  // Score circle color
+  if (pct >= 70) circle.style.stroke = 'var(--green)';
+  else if (pct >= 50) circle.style.stroke = 'var(--gold)';
+  else circle.style.stroke = 'var(--red)';
+
+  showScreen('result');
+}
+
+function retakeExam() {
+  startExam(state.subject, state.examNum);
+}
+
+function goHome() {
+  clearInterval(state.timer);
+  state.submitted = false;
+  showScreen('home');
+}
+
+// ==========================================
+// SCREEN MANAGEMENT
+// ==========================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ==========================================
+// INIT
+// ==========================================
+renderGrid();
+</script>
+</body>
+</html>
