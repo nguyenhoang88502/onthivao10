@@ -7,7 +7,7 @@
   <script>
     window.APP_CONFIG = {
       // For GitHub Pages, paste your Apps Script Web App URL here.
-      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbzdPf4cm_XTlPsqAmwHoSXLjSP1zOhtZcaqX2zPJe-nTO7JC91Vd7ArUhVffslcoRYR/exec'
+      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbzua1xK6dovoFpUp2UXlsX7IGII0tY7NvdgvzvCxBbS4_s9qltZMDGf5Z58kM-KSpjV/exec'
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -60,10 +60,10 @@
           </button>
           <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span>90 ph??t / ?????</span>
+            <span>90 phút / đề</span>
             <span class="mx-2">|</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span>40 c??u / ?????</span>
+            <span>40 câu / đề</span>
           </div>
         </div>
       </div>
@@ -364,11 +364,11 @@
         setTimeout(function() {
           var customQuestion = (args && args.custom_question) ? String(args.custom_question).trim() : '';
           var customQuestionHtml = customQuestion
-            ? '<p><strong>Cau hoi rieng cua ban:</strong> ' + escapeHtml(customQuestion) + '</p>'
+            ? '<p><strong>Câu hỏi riêng của bạn:</strong> ' + escapeHtml(customQuestion) + '</p>'
             : '';
           onSuccess({
             error: false,
-            explanation: customQuestionHtml + '<p><strong>Giai thich chi tiet:</strong></p><p>This mock answer explains the sample grammar point and would include a full answer from AI in production.</p><p><strong>Quick tip:</strong> Use the custom question box to ask something specific about this question.</p>'
+            explanation: customQuestionHtml + '<p><strong>Giải thích chi tiết:</strong></p><p>Đây là câu trả lời mẫu khi chạy thử tại máy. Khi chạy trên Apps Script, AI sẽ trả lời đầy đủ theo câu hỏi riêng của học sinh.</p>'
           });
         }, 800);
       }
@@ -838,8 +838,8 @@
         // AI Explanation button
         html += '<div class="mt-3 space-y-2">';
         html += '<div>';
-        html += '<label for="ai-prompt-' + r.question_id + '" class="block text-xs font-semibold text-gray-600 mb-1">C?u h?i ri?ng cho AI</label>';
-        html += '<textarea id="ai-prompt-' + r.question_id + '" rows="2" placeholder="V? d?: Gi?i th?ch v? sao ??p ?n B sai, ho?c l?m r? ng? ph?p trong c?u n?y..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-accent-500 focus:ring-2 focus:ring-accent-100 outline-none text-sm transition resize-none"></textarea>';
+        html += '<label for="ai-prompt-' + r.question_id + '" class="block text-xs font-semibold text-gray-600 mb-1">Câu hỏi riêng cho AI</label>';
+        html += '<textarea id="ai-prompt-' + r.question_id + '" rows="2" placeholder="Ví dụ: Giải thích vì sao đáp án B sai, hoặc làm rõ ngữ pháp trong câu này..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-accent-500 focus:ring-2 focus:ring-accent-100 outline-none text-sm transition resize-none"></textarea>';
         html += '</div>';
         html += '<button onclick="requestAIExplanation(\'' + r.question_id + '\')" class="text-sm text-accent-600 hover:text-accent-500 font-medium transition flex items-center gap-1" id="ai-btn-' + r.question_id + '">';
         html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>';
@@ -887,7 +887,7 @@
       btn.disabled = true;
       container.classList.remove('view-hidden');
       container.setAttribute('data-last-prompt', customQuestion);
-      container.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><div class="ai-loading"></div> Dang goi AI giai thich...</div>';
+      container.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><div class="ai-loading"></div> Đang gọi AI giải thích...</div>';
 
       var questionData = {
         question_text: resultItem.question_text,
@@ -909,7 +909,7 @@
         container.innerHTML = response.explanation;
       }, function() {
         btn.disabled = false;
-        container.innerHTML = '<div class="text-red-600 text-sm">Khong the ket noi den may chu AI. Vui long thu lai sau.</div>';
+        container.innerHTML = '<div class="text-red-600 text-sm">Không thể kết nối đến máy chủ AI. Vui lòng thử lại sau.</div>';
       });
     }
 
