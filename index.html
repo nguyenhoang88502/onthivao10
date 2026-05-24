@@ -112,14 +112,17 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
         </button>
         <span class="font-semibold text-gray-700 text-sm md:text-base truncate max-w-[180px] md:max-w-xs" id="test-title-display">--</span>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap justify-end">
           <div class="text-sm text-gray-500 hidden sm:block" id="progress-text">0/40</div>
           <div class="w-24 sm:w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
             <div id="progress-bar" class="h-full bg-primary-500 rounded-full transition-all duration-300" style="width:0%"></div>
           </div>
           <div id="timer-display" class="font-mono text-lg font-bold text-red-600 bg-red-50 px-3 py-1 rounded-lg min-w-[80px] text-center">90:00</div>
-          <button onclick="handleSubmitClick()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition no-print">
-            Nộp bài
+          <button onclick="abandonTest()" type="button" class="border border-red-200 bg-white hover:bg-red-50 text-red-600 px-3 py-2 rounded-lg text-sm font-semibold transition no-print">
+            Bỏ giữa chừng
+          </button>
+          <button onclick="handleSubmitClick()" type="button" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition no-print">
+            Nộp bài sớm
           </button>
         </div>
       </div>
@@ -231,13 +234,20 @@
       document.getElementById('modal-title').textContent = title;
       document.getElementById('modal-message').textContent = message;
       document.getElementById('modal-cancel').textContent = cancelText;
-      document.getElementById('modal-confirm').textContent = confirmText;
+      var confirmButton = document.getElementById('modal-confirm');
+      confirmButton.textContent = confirmText;
+      confirmButton.className = 'px-4 py-2 rounded-lg text-white font-semibold transition bg-primary-600 hover:bg-primary-700';
+      if (confirmText === 'Bỏ bài' || confirmText === 'Thoát') {
+        confirmButton.className = 'px-4 py-2 rounded-lg text-white font-semibold transition bg-red-600 hover:bg-red-700';
+      } else if (confirmText === 'Nộp bài sớm' || confirmText === 'Nộp bài') {
+        confirmButton.className = 'px-4 py-2 rounded-lg text-white font-semibold transition bg-green-600 hover:bg-green-700';
+      }
       document.getElementById('modal-overlay').classList.remove('view-hidden');
       document.getElementById('modal-cancel').onclick = function() {
         document.getElementById('modal-overlay').classList.add('view-hidden');
         if (onCancel) onCancel();
       };
-      document.getElementById('modal-confirm').onclick = function() {
+      confirmButton.onclick = function() {
         document.getElementById('modal-overlay').classList.add('view-hidden');
         if (onConfirm) onConfirm();
       };
@@ -676,8 +686,21 @@
       var unanswered = total - answered;
       var msg = 'Bạn đã trả lời ' + answered + '/' + total + ' câu.';
       if (unanswered > 0) msg += '\nCòn ' + unanswered + ' câu chưa trả lời sẽ bị tính là sai.';
-      msg += '\n\nBạn có chắc chắn muốn nộp bài?';
-      showModal('Xác nhận nộp bài', msg, 'Làm tiếp', 'Nộp bài', null, function() { submitTest(); });
+      msg += '\n\nBạn có chắc chắn muốn nộp bài sớm?';
+      showModal('Xác nhận nộp bài sớm', msg, 'Làm tiếp', 'Nộp bài sớm', null, function() { submitTest(); });
+    }
+
+    function abandonTest() {
+      var answered = Object.keys(app.answers).length;
+      var total = app.questions.length || 40;
+      var msg = 'Bạn đang làm dở bài thi.';
+      if (answered > 0) msg += '\nĐã trả lời ' + answered + '/' + total + ' câu.';
+      msg += '\n\nBỏ giữa chừng sẽ không chấm điểm và không lưu bài này.';
+      showModal('Bỏ giữa chừng?', msg, 'Tiếp tục làm', 'Bỏ bài', null, function() {
+        resetTestState();
+        showView('view-dashboard');
+        showToast('Đã bỏ bài thi đang làm.', 'info');
+      });
     }
 
     function confirmExitTest() {
