@@ -7,7 +7,7 @@
   <script>
     window.APP_CONFIG = {
       // For GitHub Pages, paste your Apps Script Web App URL here.
-      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbwFCTYrWeQ0IxyIK3l7Ld-UvjYHZN7cCCzH41netmzK7F53RSOVHyyX2LMfSERri9Ww/exec'
+      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbwkUPsFRL7obmuiIsw3vcZ_sgkJ1iG447Ik69skKIWWVqxPWrasydRZ4ntfmtb07N5O/exec'
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -211,8 +211,7 @@
     }
 
     function openParentView() {
-      var url = APP_CONFIG.gasWebAppUrl ? (APP_CONFIG.gasWebAppUrl + '?view=parent') : 'parent.html';
-      window.open(url, '_blank');
+      window.open('parent.html', '_blank');
     }
 
     function backToDashboard() {

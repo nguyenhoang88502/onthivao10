@@ -40,14 +40,6 @@ function doGet(e) {
     return handleApiRequest_(e);
   }
 
-  if (e && e.parameter && e.parameter.view === 'parent') {
-    return getParentTemplate_()
-      .evaluate()
-      .setTitle('Parent View - Luyen thi vao 10 TPHCM')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
-  }
-
   return getIndexTemplate_()
     .evaluate()
     .setTitle('Luyen thi vao 10 TPHCM - Tieng Anh')
@@ -63,13 +55,6 @@ function getIndexTemplate_() {
   }
 }
 
-function getParentTemplate_() {
-  try {
-    return HtmlService.createTemplateFromFile('parent');
-  } catch (err) {
-    return HtmlService.createTemplateFromFile('Parent');
-  }
-}
 
 // ---------- STATIC SITE API ENTRY POINT ----------
 function handleApiRequest_(e) {
