@@ -53,12 +53,18 @@
           <h1 class="text-xl md:text-2xl font-bold text-gray-800">Luyện thi vào 10 TPHCM</h1>
           <p class="text-sm text-gray-500">Tiếng Anh - 30 Đề thi thử chuẩn cấu trúc Sở GD&ĐT</p>
         </div>
-        <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          <span>90 phút / đề</span>
-          <span class="mx-2">|</span>
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          <span>40 câu / đề</span>
+        <div class="flex items-center gap-3">
+          <button onclick="openParentView()" class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm font-semibold text-gray-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 10-4 0v6m4 0a2 2 0 11-4 0m4 0h2a2 2 0 002-2v-3a2 2 0 10-4 0v5m0 0v-1m6 1v-4a2 2 0 00-2-2h-2m0 0V7a2 2 0 10-4 0v6m4-6h2a2 2 0 012 2v5a2 2 0 01-2 2h-2"/></svg>
+            Parent view
+          </button>
+          <div class="hidden md:flex items-center gap-2 text-sm text-gray-500">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>90 ph??t / ?????</span>
+            <span class="mx-2">|</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>40 c??u / ?????</span>
+          </div>
         </div>
       </div>
     </header>
@@ -202,6 +208,11 @@
       });
       document.getElementById(viewId).classList.remove('view-hidden');
       window.scrollTo(0, 0);
+    }
+
+    function openParentView() {
+      var url = APP_CONFIG.gasWebAppUrl ? (APP_CONFIG.gasWebAppUrl + '?view=parent') : 'parent.html';
+      window.open(url, '_blank');
     }
 
     function backToDashboard() {

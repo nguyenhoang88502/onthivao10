@@ -40,6 +40,14 @@ function doGet(e) {
     return handleApiRequest_(e);
   }
 
+  if (e && e.parameter && e.parameter.view === 'parent') {
+    return getParentTemplate_()
+      .evaluate()
+      .setTitle('Parent View - Luyen thi vao 10 TPHCM')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
+  }
+
   return getIndexTemplate_()
     .evaluate()
     .setTitle('Luyen thi vao 10 TPHCM - Tieng Anh')
@@ -52,6 +60,14 @@ function getIndexTemplate_() {
     return HtmlService.createTemplateFromFile('index');
   } catch (err) {
     return HtmlService.createTemplateFromFile('Index');
+  }
+}
+
+function getParentTemplate_() {
+  try {
+    return HtmlService.createTemplateFromFile('parent');
+  } catch (err) {
+    return HtmlService.createTemplateFromFile('Parent');
   }
 }
 
@@ -69,6 +85,12 @@ function handleApiRequest_(e) {
         break;
       case 'getTestDetails':
         result = getTestDetails(payload);
+        break;
+      case 'getParentDashboard':
+        result = getParentDashboard(payload || {});
+        break;
+      case 'getParentSubmissionDetail':
+        result = getParentSubmissionDetail(payload || {});
         break;
       case 'submitTest':
         result = submitTest(payload || {});
@@ -107,6 +129,232 @@ function createApiResponse_(data, callback) {
   return ContentService
     .createTextOutput(output)
     .setMimeType(mimeType);
+}
+
+function formatTimestamp_(value) {
+  if (!value) return '';
+  var date = new Date(value);
+  if (isNaN(date.getTime())) return String(value);
+  try {
+    return Utilities.formatDate(date, Session.getScriptTimeZone() || 'Asia/Bangkok', 'dd/MM/yyyy HH:mm');
+  } catch (err) {
+    return date.toISOString();
+  }
+}
+
+function buildTestTitleMap_() {
+  var map = {};
+  var testsSheet = getSheet_(SHEET_TESTS);
+  var testsData = testsSheet.getDataRange().getValues();
+  for (var i = 1; i < testsData.length; i++) {
+    var row = testsData[i];
+    if (!row[COL_TEST.test_id - 1]) continue;
+    map[String(row[COL_TEST.test_id - 1])] = row[COL_TEST.title - 1] || '';
+  }
+  return map;
+}
+
+function getParentDashboard(payload) {
+  try {
+    var limit = parseInt((payload && payload.limit) || 10, 10);
+    if (isNaN(limit) || limit <= 0) limit = 10;
+    if (limit > 50) limit = 50;
+
+    var testTitleMap = buildTestTitleMap_();
+    var submissionsSheet = getSheet_(SHEET_SUBMISSIONS);
+    var data = submissionsSheet.getDataRange().getValues();
+    var submissions = [];
+    var byTest = {};
+    var uniqueStudents = {};
+    var scoreSum = 0;
+    var latest = null;
+
+    for (var i = 1; i < data.length; i++) {
+      var row = data[i];
+      if (!row[COL_SUBMISSION.submission_id - 1]) continue;
+
+      var submissionId = row[COL_SUBMISSION.submission_id - 1];
+      var studentName = row[COL_SUBMISSION.student_name - 1] || 'An danh';
+      var studentId = row[COL_SUBMISSION.student_id - 1] || '';
+      var testId = row[COL_SUBMISSION.test_id - 1];
+      var score = parseFloat(row[COL_SUBMISSION.score - 1]) || 0;
+      var timestampRaw = row[COL_SUBMISSION.timestamp - 1] || '';
+      var timestampDate = new Date(timestampRaw);
+      var timestampValue = isNaN(timestampDate.getTime()) ? 0 : timestampDate.getTime();
+      var timestampDisplay = formatTimestamp_(timestampRaw);
+      var testKey = String(testId);
+      var testTitle = testTitleMap[testKey] || ('De thi ' + testKey);
+      var studentKey = studentId ? (studentId + '|' + studentName) : studentName;
+
+      var summaryItem = {
+        submission_id: submissionId,
+        student_name: studentName,
+        student_id: studentId,
+        test_id: testId,
+        test_title: testTitle,
+        score: score,
+        timestamp: timestampRaw,
+        timestamp_display: timestampDisplay,
+        timestamp_value: timestampValue
+      };
+      submissions.push(summaryItem);
+      scoreSum += score;
+      uniqueStudents[studentKey] = true;
+
+      if (!byTest[testKey]) {
+        byTest[testKey] = {
+          test_id: testId,
+          test_title: testTitle,
+          submission_count: 0,
+          score_sum: 0,
+          latest_timestamp: 0,
+          latest_timestamp_display: '',
+          latest_score: 0
+        };
+      }
+      byTest[testKey].submission_count += 1;
+      byTest[testKey].score_sum += score;
+      if (timestampValue >= byTest[testKey].latest_timestamp) {
+        byTest[testKey].latest_timestamp = timestampValue;
+        byTest[testKey].latest_timestamp_display = timestampDisplay;
+        byTest[testKey].latest_score = score;
+      }
+
+      if (!latest || timestampValue > latest.timestampValue) {
+        latest = { timestampValue: timestampValue, timestampDisplay: timestampDisplay };
+      }
+    }
+
+    submissions.sort(function(a, b) {
+      return (b.timestamp_value || 0) - (a.timestamp_value || 0);
+    });
+
+    var testsSummary = Object.keys(byTest).map(function(key) {
+      var item = byTest[key];
+      var avg = item.submission_count ? item.score_sum / item.submission_count : 0;
+      return {
+        test_id: item.test_id,
+        test_title: item.test_title,
+        submission_count: item.submission_count,
+        average_score: Math.round(avg * 100) / 100,
+        latest_score: item.latest_score,
+        latest_timestamp_display: item.latest_timestamp_display
+      };
+    }).sort(function(a, b) {
+      return b.submission_count - a.submission_count;
+    });
+
+    var totalSubmissions = submissions.length;
+    var averageScore = totalSubmissions ? scoreSum / totalSubmissions : 0;
+
+    return {
+      stats: {
+        total_submissions: totalSubmissions,
+        unique_students: Object.keys(uniqueStudents).length,
+        average_score: Math.round(averageScore * 100) / 100,
+        latest_activity: latest ? latest.timestampDisplay : ''
+      },
+      recent_submissions: submissions.slice(0, limit),
+      test_summary: testsSummary,
+      limit: limit
+    };
+  } catch (e) {
+    return { error: true, message: 'Khong the tai du lieu phu huynh. Vui long thu lai.' };
+  }
+}
+
+function getParentSubmissionDetail(payload) {
+  try {
+    var submissionId = '';
+    if (typeof payload === 'string') {
+      submissionId = payload;
+    } else if (payload) {
+      submissionId = payload.submission_id || payload.submissionId || '';
+    }
+    submissionId = String(submissionId || '').trim();
+    if (!submissionId) {
+      return { error: true, message: 'Thieu submission_id.' };
+    }
+
+    var submissionsSheet = getSheet_(SHEET_SUBMISSIONS);
+    var submissionsData = submissionsSheet.getDataRange().getValues();
+    var submissionRow = null;
+
+    for (var i = 1; i < submissionsData.length; i++) {
+      if (String(submissionsData[i][COL_SUBMISSION.submission_id - 1]) === submissionId) {
+        submissionRow = submissionsData[i];
+        break;
+      }
+    }
+
+    if (!submissionRow) {
+      return { error: true, message: 'Khong tim thay bai nop nay.' };
+    }
+
+    var testId = submissionRow[COL_SUBMISSION.test_id - 1];
+    var testTitleMap = buildTestTitleMap_();
+    var testTitle = testTitleMap[String(testId)] || ('De thi ' + testId);
+    var studentName = submissionRow[COL_SUBMISSION.student_name - 1] || 'An danh';
+    var studentId = submissionRow[COL_SUBMISSION.student_id - 1] || '';
+    var score = parseFloat(submissionRow[COL_SUBMISSION.score - 1]) || 0;
+    var timestamp = submissionRow[COL_SUBMISSION.timestamp - 1] || '';
+    var answers = {};
+    try {
+      answers = JSON.parse(submissionRow[COL_SUBMISSION.answers_json - 1] || '{}') || {};
+    } catch (err) {
+      answers = {};
+    }
+
+    var questionsSheet = getSheet_(SHEET_QUESTIONS);
+    var questionsData = questionsSheet.getDataRange().getValues();
+    var questions = [];
+    var correctCount = 0;
+    var qDisplayNum = 0;
+
+    for (var j = 1; j < questionsData.length; j++) {
+      var qRow = questionsData[j];
+      if (String(qRow[COL_QUESTION.test_id - 1]) !== String(testId)) continue;
+
+      qDisplayNum++;
+      var qId = qRow[COL_QUESTION.question_id - 1];
+      var studentAnswer = String(answers[qId] || '').trim().toUpperCase();
+      var correctAnswer = String(qRow[COL_QUESTION.correct_answer - 1] || '').trim().toUpperCase();
+      var isCorrect = studentAnswer === correctAnswer;
+      if (isCorrect) correctCount++;
+
+      questions.push({
+        question_id: qId,
+        display_number: qDisplayNum,
+        part_number: qRow[COL_QUESTION.part_number - 1],
+        section_title: qRow[COL_QUESTION.section_title - 1] || '',
+        question_text: qRow[COL_QUESTION.question_text - 1] || '',
+        student_answer: studentAnswer || '(Chua tra loi)',
+        correct_answer: correctAnswer,
+        is_correct: isCorrect,
+        points_earned: isCorrect ? (parseFloat(qRow[COL_QUESTION.points - 1]) || CONFIG.POINTS_PER_QUESTION) : 0,
+        points_max: parseFloat(qRow[COL_QUESTION.points - 1]) || CONFIG.POINTS_PER_QUESTION
+      });
+    }
+
+    return {
+      submission: {
+        submission_id: submissionId,
+        student_name: studentName,
+        student_id: studentId,
+        test_id: testId,
+        test_title: testTitle,
+        score: score,
+        max_score: CONFIG.MAX_SCORE,
+        timestamp: timestamp,
+        timestamp_display: formatTimestamp_(timestamp),
+        total_questions: questions.length,
+        correct_count: correctCount
+      },
+      questions: questions
+    };
+  } catch (e) {
+    return { error: true, message: 'Khong the tai chi tiet bai nop. Vui long thu lai.' };
+  }
 }
 
 // ---------- HELPER: Get or create sheet with headers ----------

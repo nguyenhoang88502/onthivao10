@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parent View - Luyen thi vao 10 TPHCM</title>
+  <script>
+    window.APP_CONFIG = {
+      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbzdPf4cm_XTlPsqAmwHoSXLjSP1zOhtZcaqX2zPJe-nTO7JC91Vd7ArUhVffslcoRYR/exec'
+    };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+            accent: { 500: '#8b5cf6', 600: '#7c3aed' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .view-hidden { display: none !important; }
+    .loading-dot {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #e5e7eb;
+      border-top-color: #3b82f6;
+      border-radius: 9999px;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen text-gray-800">
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-3">
+      <div>
+        <p class="text-xs uppercase tracking-wide text-gray-500">Parent view</p>
+        <h1 class="text-xl md:text-2xl font-bold">Goc phu huynh</h1>
+        <p class="text-sm text-gray-500">Xem tong quan ket qua lam bai va bai nop gan day</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="loadDashboard()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-200 hover:bg-gray-50 text-sm font-semibold transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8 8 0 004.582 9m0 0H9m11 11v-5h-.581m0 0A8 8 0 014.582 15m15.357 2H15"/></svg>
+          Tai lai
+        </button>
+        <button onclick="openStudentView()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7m0 14l-7-7m7 7h11"/></svg>
+          Student view
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="text-sm text-gray-500">Tong bai nop</div>
+        <div class="text-3xl font-bold mt-1" id="stat-total">--</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="text-sm text-gray-500">Hoc sinh khac nhau</div>
+        <div class="text-3xl font-bold mt-1" id="stat-students">--</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="text-sm text-gray-500">Diem trung binh</div>
+        <div class="text-3xl font-bold mt-1 text-accent-600" id="stat-average">--</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="text-sm text-gray-500">Cap nhat gan nhat</div>
+        <div class="text-lg font-semibold mt-1" id="stat-latest">--</div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div class="xl:col-span-2 bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg font-bold">Bai nop gan day</h2>
+            <p class="text-sm text-gray-500">Nhan vao tung dong de xem chi tiet bai lam</p>
+          </div>
+          <div class="w-full max-w-xs">
+            <input id="search-input" type="text" oninput="filterRecent()" placeholder="Tim hoc sinh, de, ma bai nop..."
+              class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm">
+          </div>
+        </div>
+
+        <div id="loading-recent" class="py-12 text-center">
+          <span class="loading-dot mx-auto block"></span>
+          <p class="text-gray-500 mt-3">Dang tai du lieu phu huynh...</p>
+        </div>
+
+        <div id="recent-empty" class="view-hidden py-12 text-center text-gray-500">
+          Chua co bai nop nao de hien thi.
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full text-sm">
+            <thead class="text-left text-gray-500 border-b">
+              <tr>
+                <th class="py-3 pr-4 font-semibold">Hoc sinh</th>
+                <th class="py-3 pr-4 font-semibold">De thi</th>
+                <th class="py-3 pr-4 font-semibold">Diem</th>
+                <th class="py-3 pr-4 font-semibold">Thoi gian</th>
+                <th class="py-3 pr-4 font-semibold"></th>
+              </tr>
+            </thead>
+            <tbody id="recent-tbody" class="divide-y"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-bold">Tong quan de thi</h2>
+            <p class="text-sm text-gray-500">So lan lam bai va diem trung binh theo de</p>
+          </div>
+        </div>
+
+        <div id="test-summary" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <section id="detail-panel" class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 view-hidden">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <h2 class="text-lg font-bold">Chi tiet bai nop</h2>
+          <p class="text-sm text-gray-500" id="detail-subtitle">--</p>
+        </div>
+        <button onclick="closeDetail()" class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 text-sm font-semibold transition">
+          Dong
+        </button>
+      </div>
+      <div id="detail-loading" class="view-hidden py-8 text-center">
+        <span class="loading-dot mx-auto block"></span>
+      </div>
+      <div id="detail-content" class="space-y-4"></div>
+    </section>
+  </main>
+
+  <div id="modal" class="view-hidden fixed inset-0 z-50 bg-black/50 p-4 flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="p-5 border-b border-gray-200 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold" id="modal-title">--</h3>
+          <p class="text-sm text-gray-500" id="modal-subtitle">--</p>
+        </div>
+        <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div id="modal-body" class="p-5 overflow-auto space-y-4"></div>
+    </div>
+  </div>
+
+  <script>
+    var APP_CONFIG = window.APP_CONFIG || {};
+    APP_CONFIG.gasWebAppUrl = APP_CONFIG.gasWebAppUrl || '';
+
+    var state = {
+      dashboard: null,
+      recentRows: [],
+      selectedSubmission: null
+    };
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function scoreClass(score) {
+      if (score >= 8) return 'bg-green-100 text-green-700';
+      if (score >= 5) return 'bg-amber-100 text-amber-700';
+      return 'bg-red-100 text-red-700';
+    }
+
+    function callGAS(fnName, args, onSuccess, onError) {
+      if (!APP_CONFIG.gasWebAppUrl) {
+        if (onError) onError(new Error('Missing gasWebAppUrl.'));
+        return;
+      }
+
+      var callbackName = '__gasParentCb_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+      var script = document.createElement('script');
+      var timeoutId = setTimeout(function() {
+        cleanup();
+        if (onError) onError(new Error('Remote GAS request timed out.'));
+      }, 30000);
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function(response) {
+        cleanup();
+        if (onSuccess) onSuccess(response);
+      };
+
+      script.onerror = function() {
+        cleanup();
+        if (onError) onError(new Error('Could not load remote GAS endpoint.'));
+      };
+
+      var params = [
+        'action=' + encodeURIComponent(fnName),
+        'callback=' + encodeURIComponent(callbackName)
+      ];
+      if (args !== null && args !== undefined) {
+        params.push('payload=' + encodeURIComponent(JSON.stringify(args)));
+      }
+
+      script.src = APP_CONFIG.gasWebAppUrl + (APP_CONFIG.gasWebAppUrl.indexOf('?') >= 0 ? '&' : '?') + params.join('&');
+      document.head.appendChild(script);
+    }
+
+    function loadDashboard() {
+      document.getElementById('loading-recent').classList.remove('view-hidden');
+      document.getElementById('recent-empty').classList.add('view-hidden');
+      document.getElementById('recent-tbody').innerHTML = '';
+      document.getElementById('test-summary').innerHTML = '';
+      document.getElementById('detail-panel').classList.add('view-hidden');
+
+      callGAS('getParentDashboard', { limit: 12 }, function(response) {
+        document.getElementById('loading-recent').classList.add('view-hidden');
+        if (response && response.error) {
+          document.getElementById('recent-empty').classList.remove('view-hidden');
+          document.getElementById('recent-empty').textContent = response.message || 'Khong the tai du lieu.';
+          return;
+        }
+
+        state.dashboard = response || {};
+        renderDashboard();
+      }, function() {
+        document.getElementById('loading-recent').classList.add('view-hidden');
+        document.getElementById('recent-empty').classList.remove('view-hidden');
+        document.getElementById('recent-empty').textContent = 'Khong the ket noi den may chu.';
+      });
+    }
+
+    function renderDashboard() {
+      var dashboard = state.dashboard || {};
+      var stats = dashboard.stats || {};
+      var recent = dashboard.recent_submissions || [];
+      var testSummary = dashboard.test_summary || [];
+
+      document.getElementById('stat-total').textContent = stats.total_submissions || 0;
+      document.getElementById('stat-students').textContent = stats.unique_students || 0;
+      document.getElementById('stat-average').textContent = (stats.average_score || 0).toFixed(2);
+      document.getElementById('stat-latest').textContent = stats.latest_activity || '--';
+
+      state.recentRows = recent;
+      renderRecentRows(recent);
+      renderTestSummary(testSummary);
+    }
+
+    function renderRecentRows(rows) {
+      var tbody = document.getElementById('recent-tbody');
+      if (!rows.length) {
+        document.getElementById('recent-empty').classList.remove('view-hidden');
+        tbody.innerHTML = '';
+        return;
+      }
+      document.getElementById('recent-empty').classList.add('view-hidden');
+
+      tbody.innerHTML = rows.map(function(row) {
+        var badge = scoreClass(row.score || 0);
+        var searchText = [
+          row.student_name || '',
+          row.student_id || '',
+          row.test_title || '',
+          row.submission_id || ''
+        ].join(' ').toLowerCase();
+        return [
+          '<tr class="submission-row" data-search="' + escapeHtml(searchText) + '" data-submission-id="' + escapeHtml(row.submission_id) + '">',
+          '<td class="py-3 pr-4">',
+          '<div class="font-semibold">' + escapeHtml(row.student_name || 'An danh') + '</div>',
+          '<div class="text-xs text-gray-500">' + escapeHtml(row.student_id || 'No student id') + '</div>',
+          '</td>',
+          '<td class="py-3 pr-4">',
+          '<div class="font-medium">' + escapeHtml(row.test_title || 'De thi') + '</div>',
+          '<div class="text-xs text-gray-500">' + escapeHtml(row.submission_id || '') + '</div>',
+          '</td>',
+          '<td class="py-3 pr-4">',
+          '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ' + badge + '">' + (row.score || 0).toFixed(2) + ' / 10</span>',
+          '</td>',
+          '<td class="py-3 pr-4 text-gray-600">' + escapeHtml(row.timestamp_display || '') + '</td>',
+          '<td class="py-3 pr-4 text-right">',
+          '<button class="text-sm font-semibold text-primary-600 hover:text-primary-700">Xem</button>',
+          '</td>',
+          '</tr>'
+        ].join('');
+      }).join('');
+
+      Array.prototype.forEach.call(tbody.querySelectorAll('.submission-row'), function(rowEl) {
+        rowEl.addEventListener('click', function() {
+          openSubmissionDetail(rowEl.getAttribute('data-submission-id'));
+        });
+      });
+    }
+
+    function filterRecent() {
+      var query = (document.getElementById('search-input').value || '').trim().toLowerCase();
+      var rows = document.querySelectorAll('.submission-row');
+      var visibleCount = 0;
+      Array.prototype.forEach.call(rows, function(row) {
+        var search = row.getAttribute('data-search') || '';
+        var match = !query || search.indexOf(query) !== -1;
+        row.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+      document.getElementById('recent-empty').classList.toggle('view-hidden', visibleCount !== 0 || !state.recentRows.length);
+    }
+
+    function renderTestSummary(items) {
+      var container = document.getElementById('test-summary');
+      if (!items.length) {
+        container.innerHTML = '<div class="text-sm text-gray-500">Chua co du lieu tong quan theo de thi.</div>';
+        return;
+      }
+
+      container.innerHTML = items.map(function(item) {
+        return [
+          '<div class="border border-gray-100 rounded-lg p-3">',
+          '<div class="flex items-start justify-between gap-3">',
+          '<div>',
+          '<div class="font-semibold text-sm">' + escapeHtml(item.test_title || 'De thi') + '</div>',
+          '<div class="text-xs text-gray-500 mt-1">' + (item.submission_count || 0) + ' bai nop</div>',
+          '</div>',
+          '<div class="text-right">',
+          '<div class="font-bold text-primary-600">' + (item.average_score || 0).toFixed(2) + '</div>',
+          '<div class="text-xs text-gray-500">Diem TB</div>',
+          '</div>',
+          '</div>',
+          '<div class="mt-2 text-xs text-gray-500">Lan gan nhat: ' + escapeHtml(item.latest_timestamp_display || '--') + '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+    }
+
+    function openSubmissionDetail(submissionId) {
+      if (!submissionId) return;
+      document.getElementById('detail-panel').classList.remove('view-hidden');
+      document.getElementById('detail-loading').classList.remove('view-hidden');
+      document.getElementById('detail-content').innerHTML = '';
+      document.getElementById('detail-subtitle').textContent = 'Dang tai chi tiet...';
+      document.getElementById('detail-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      callGAS('getParentSubmissionDetail', { submission_id: submissionId }, function(response) {
+        document.getElementById('detail-loading').classList.add('view-hidden');
+        if (response && response.error) {
+          document.getElementById('detail-subtitle').textContent = response.message || 'Khong the tai chi tiet.';
+          document.getElementById('detail-content').innerHTML = '';
+          return;
+        }
+
+        state.selectedSubmission = response;
+        renderDetail(response);
+      }, function() {
+        document.getElementById('detail-loading').classList.add('view-hidden');
+        document.getElementById('detail-subtitle').textContent = 'Khong the ket noi den may chu.';
+      });
+    }
+
+    function renderDetail(response) {
+      var submission = response.submission || {};
+      var questions = response.questions || [];
+      document.getElementById('detail-subtitle').textContent = [
+        submission.student_name || 'An danh',
+        submission.test_title || 'De thi',
+        submission.timestamp_display || ''
+      ].filter(Boolean).join(' | ');
+
+      var header = [
+        '<div class="grid grid-cols-1 sm:grid-cols-4 gap-3">',
+        '<div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-500">Diem</div><div class="text-2xl font-bold text-primary-600">' + (submission.score || 0).toFixed(2) + '</div></div>',
+        '<div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-500">Dung</div><div class="text-2xl font-bold text-green-600">' + (submission.correct_count || 0) + '</div></div>',
+        '<div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-500">Tong cau</div><div class="text-2xl font-bold">' + (submission.total_questions || 0) + '</div></div>',
+        '<div class="bg-gray-50 rounded-lg p-3"><div class="text-xs text-gray-500">Thoi gian</div><div class="text-sm font-semibold">' + escapeHtml(submission.timestamp_display || '--') + '</div></div>',
+        '</div>'
+      ].join('');
+
+      var questionHtml = questions.map(function(q) {
+        var good = q.is_correct ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50';
+        var status = q.is_correct ? 'Dung' : 'Sai';
+        return [
+          '<div class="border rounded-lg p-4 ' + good + '">',
+          '<div class="flex items-start justify-between gap-3 mb-2">',
+          '<div>',
+          '<div class="text-xs text-gray-500">Cau ' + escapeHtml(q.display_number) + ' | Phan ' + escapeHtml(q.part_number) + '</div>',
+          '<div class="font-medium mt-1">' + escapeHtml(q.question_text) + '</div>',
+          '</div>',
+          '<span class="px-2 py-1 rounded-full text-xs font-bold ' + (q.is_correct ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700') + '">' + status + '</span>',
+          '</div>',
+          '<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">',
+          '<div><span class="text-gray-500">Hoc sinh:</span> ' + escapeHtml(q.student_answer) + '</div>',
+          '<div><span class="text-gray-500">Dap an dung:</span> ' + escapeHtml(q.correct_answer) + '</div>',
+          '<div><span class="text-gray-500">Diem:</span> ' + (q.points_earned || 0).toFixed(2) + ' / ' + (q.points_max || 0).toFixed(2) + '</div>',
+          '</div>',
+          '</div>'
+        ].join('');
+      }).join('');
+
+      document.getElementById('detail-content').innerHTML = header + '<div class="space-y-3">' + questionHtml + '</div>';
+    }
+
+    function closeDetail() {
+      document.getElementById('detail-panel').classList.add('view-hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.add('view-hidden');
+      document.getElementById('modal-body').innerHTML = '';
+    }
+
+    function openStudentView() {
+      var url = APP_CONFIG.gasWebAppUrl || 'index.html';
+      window.location.href = url;
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboard);
+  </script>
+</body>
+</html>
