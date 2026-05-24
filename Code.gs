@@ -235,6 +235,7 @@ function getParentDashboard(payload) {
     return {
       stats: {
         total_submissions: totalSubmissions,
+        completed_tests: Object.keys(byTest).length,
         unique_students: Object.keys(uniqueStudents).length,
         average_score: Math.round(averageScore * 100) / 100,
         latest_activity: latest ? latest.timestampDisplay : ''

@@ -6,7 +6,7 @@
   <title>Góc phụ huynh - Luyện thi vào 10 TPHCM</title>
   <script>
     window.APP_CONFIG = {
-      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbwkUPsFRL7obmuiIsw3vcZ_sgkJ1iG447Ik69skKIWWVqxPWrasydRZ4ntfmtb07N5O/exec'
+      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycbw5lfRpE2CsdrYdZVSeDYo1kLXEbbM-x-rvqS4IGOO47GHTi7gxSMLGAtrCAn367STW/exec'
     };
   </script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -61,11 +61,11 @@
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
     <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="text-sm text-gray-500">Tổng bài nộp</div>
+        <div class="text-sm text-gray-500">Số đề đã làm</div>
         <div class="text-3xl font-bold mt-1" id="stat-total">--</div>
       </div>
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-        <div class="text-sm text-gray-500">Học sinh khác nhau</div>
+        <div class="text-sm text-gray-500">Tổng bài nộp</div>
         <div class="text-3xl font-bold mt-1" id="stat-students">--</div>
       </div>
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
@@ -120,7 +120,7 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="text-lg font-bold">Tổng quan đề thi</h2>
-            <p class="text-sm text-gray-500">Số lần làm bài và điểm trung bình theo đề</p>
+            <p class="text-sm text-gray-500">Điểm trung bình theo từng đề đã làm</p>
           </div>
         </div>
 
@@ -276,8 +276,8 @@
       var recent = dashboard.recent_submissions || [];
       var testSummary = dashboard.test_summary || [];
 
-      document.getElementById('stat-total').textContent = stats.total_submissions || 0;
-      document.getElementById('stat-students').textContent = stats.unique_students || 0;
+      document.getElementById('stat-total').textContent = stats.completed_tests || 0;
+      document.getElementById('stat-students').textContent = stats.total_submissions || 0;
       document.getElementById('stat-average').textContent = (stats.average_score || 0).toFixed(2);
       document.getElementById('stat-latest').textContent = stats.latest_activity || '--';
 
@@ -357,7 +357,7 @@
           '<div class="flex items-start justify-between gap-3">',
           '<div>',
           '<div class="font-semibold text-sm">' + escapeHtml(item.test_title || 'Đề thi') + '</div>',
-          '<div class="text-xs text-gray-500 mt-1">' + (item.submission_count || 0) + ' bài nộp</div>',
+          '<div class="text-xs text-gray-500 mt-1">Đã làm đề này</div>',
           '</div>',
           '<div class="text-right">',
           '<div class="font-bold text-primary-600">' + (item.average_score || 0).toFixed(2) + '</div>',
