@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Luyện thi vào 10 TPHCM - Tiếng Anh</title>
+  <script>
+    window.APP_CONFIG = {
+      // For GitHub Pages, paste your Apps Script Web App URL here.
+      gasWebAppUrl: 'https://script.google.com/macros/s/AKfycby--95rDmojFpo3AUaqKGQJMtHTXR2SY9Mrkg0zJvwV0Wlbb9I99hjAFfpBycMccIWp/exec'
+    };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -183,6 +189,9 @@
       ? google.script.run
       : null;
 
+    var APP_CONFIG = window.APP_CONFIG || {};
+    APP_CONFIG.gasWebAppUrl = APP_CONFIG.gasWebAppUrl || '';
+
     // ===== VIEW SWITCHING =====
     function showView(viewId) {
       ['view-dashboard', 'view-test', 'view-results'].forEach(function(id) {
@@ -252,22 +261,64 @@
     // ===== SAFE GAS CALL WRAPPER =====
     function callGAS(fnName, args, onSuccess, onError) {
       if (GOOGLE_SCRIPT_RUN) {
-        var runner = GOOGLE_SCRIPT_RUN;
-        if (args !== null && args !== undefined) {
-          runner = runner.withArgs(args);
-        }
-        runner = runner.withSuccessHandler(onSuccess);
-        runner = runner.withFailureHandler(function(err) {
+        var runner = GOOGLE_SCRIPT_RUN
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(function(err) {
           console.error('GAS error [' + fnName + ']:', err);
           if (onError) onError(err);
           else showToast('Loi ket noi. Vui long thu lai.', 'error');
         });
-        runner[fnName]();
+        var fnArgs = (args === null || args === undefined) ? [] : [args];
+        if (typeof runner[fnName] !== 'function') {
+          var err = new Error('Unknown GAS function: ' + fnName);
+          console.error(err);
+          if (onError) onError(err);
+          return;
+        }
+        runner[fnName].apply(runner, fnArgs);
+      } else if (APP_CONFIG.gasWebAppUrl) {
+        callRemoteGAS(fnName, args, onSuccess, onError);
       } else {
         // Local dev fallback
         console.warn('google.script.run not available — running in local dev mode');
         simulateGAS(fnName, args, onSuccess, onError);
       }
+    }
+
+    function callRemoteGAS(fnName, args, onSuccess, onError) {
+      var callbackName = '__gasCallback_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+      var script = document.createElement('script');
+      var timeoutId = setTimeout(function() {
+        cleanup();
+        if (onError) onError(new Error('Remote GAS request timed out.'));
+      }, 30000);
+
+      function cleanup() {
+        clearTimeout(timeoutId);
+        try { delete window[callbackName]; } catch (e) { window[callbackName] = undefined; }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function(response) {
+        cleanup();
+        if (onSuccess) onSuccess(response);
+      };
+
+      script.onerror = function() {
+        cleanup();
+        if (onError) onError(new Error('Could not load remote GAS endpoint.'));
+      };
+
+      var params = [
+        'action=' + encodeURIComponent(fnName),
+        'callback=' + encodeURIComponent(callbackName)
+      ];
+      if (args !== null && args !== undefined) {
+        params.push('payload=' + encodeURIComponent(JSON.stringify(args)));
+      }
+
+      script.src = APP_CONFIG.gasWebAppUrl + (APP_CONFIG.gasWebAppUrl.indexOf('?') >= 0 ? '&' : '?') + params.join('&');
+      document.head.appendChild(script);
     }
 
     // ===== LOCAL DEV SIMULATION =====
