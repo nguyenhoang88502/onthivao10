@@ -351,9 +351,13 @@
         }, 500);
       } else if (fnName === 'callDeepSeekExplanation') {
         setTimeout(function() {
+          var customQuestion = (args && args.custom_question) ? String(args.custom_question).trim() : '';
+          var customQuestionHtml = customQuestion
+            ? '<p><strong>Cau hoi rieng cua ban:</strong> ' + escapeHtml(customQuestion) + '</p>'
+            : '';
           onSuccess({
             error: false,
-            explanation: '<p><strong>Giải thích chi tiết:</strong></p><p>Đây là câu hỏi kiểm tra kiến thức về <em>thì hiện tại hoàn thành</em> (Present Perfect).</p><p><strong>Dịch nghĩa:</strong> "Tôi ___ bộ phim này ba lần rồi."</p><p><strong>Phân tích:</strong></p><ul><li><strong>A. have watched</strong> — ĐÚNG: Dùng Present Perfect với "three times" để diễn tả trải nghiệm.</li><li><strong>B. watched</strong> — SAI: Quá khứ đơn không phù hợp khi không có thời gian xác định.</li><li><strong>C. am watching</strong> — SAI: Hiện tại tiếp diễn không phù hợp về nghĩa.</li><li><strong>D. watch</strong> — SAI: Hiện tại đơn chỉ thói quen, không phải trải nghiệm.</li></ul><p><strong>Mẹo:</strong> Khi thấy "three times", "ever", "never", "so far" → dùng Present Perfect.</p>'
+            explanation: customQuestionHtml + '<p><strong>Giai thich chi tiet:</strong></p><p>This mock answer explains the sample grammar point and would include a full answer from AI in production.</p><p><strong>Quick tip:</strong> Use the custom question box to ask something specific about this question.</p>'
           });
         }, 800);
       }
@@ -821,7 +825,11 @@
         html += '</div>';
 
         // AI Explanation button
-        html += '<div class="mt-3">';
+        html += '<div class="mt-3 space-y-2">';
+        html += '<div>';
+        html += '<label for="ai-prompt-' + r.question_id + '" class="block text-xs font-semibold text-gray-600 mb-1">C?u h?i ri?ng cho AI</label>';
+        html += '<textarea id="ai-prompt-' + r.question_id + '" rows="2" placeholder="V? d?: Gi?i th?ch v? sao ??p ?n B sai, ho?c l?m r? ng? ph?p trong c?u n?y..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-accent-500 focus:ring-2 focus:ring-accent-100 outline-none text-sm transition resize-none"></textarea>';
+        html += '</div>';
         html += '<button onclick="requestAIExplanation(\'' + r.question_id + '\')" class="text-sm text-accent-600 hover:text-accent-500 font-medium transition flex items-center gap-1" id="ai-btn-' + r.question_id + '">';
         html += '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>';
         html += 'Giải thích bằng AI';
@@ -841,14 +849,17 @@
     function requestAIExplanation(questionId) {
       var btn = document.getElementById('ai-btn-' + questionId);
       var container = document.getElementById('ai-explanation-' + questionId);
+      var promptInput = document.getElementById('ai-prompt-' + questionId);
+      var customQuestion = promptInput ? promptInput.value.trim() : '';
+      var lastPrompt = container.getAttribute('data-last-prompt') || '';
 
-      // Toggle if already loaded
-      if (container.innerHTML && !container.classList.contains('view-hidden')) {
-        container.classList.add('view-hidden');
-        return;
-      }
-      if (container.innerHTML && container.classList.contains('view-hidden')) {
-        container.classList.remove('view-hidden');
+      // Toggle if already loaded with the same prompt
+      if (container.innerHTML && lastPrompt === customQuestion) {
+        if (!container.classList.contains('view-hidden')) {
+          container.classList.add('view-hidden');
+        } else {
+          container.classList.remove('view-hidden');
+        }
         return;
       }
 
@@ -864,7 +875,8 @@
       // Show loading
       btn.disabled = true;
       container.classList.remove('view-hidden');
-      container.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><div class="ai-loading"></div> Đang gọi AI giải thích...</div>';
+      container.setAttribute('data-last-prompt', customQuestion);
+      container.innerHTML = '<div class="flex items-center gap-2 text-gray-500"><div class="ai-loading"></div> Dang goi AI giai thich...</div>';
 
       var questionData = {
         question_text: resultItem.question_text,
@@ -873,7 +885,8 @@
         option_a: resultItem.option_a || '',
         option_b: resultItem.option_b || '',
         option_c: resultItem.option_c || '',
-        option_d: resultItem.option_d || ''
+        option_d: resultItem.option_d || '',
+        custom_question: customQuestion
       };
 
       callGAS('callDeepSeekExplanation', questionData, function(response) {
@@ -885,7 +898,7 @@
         container.innerHTML = response.explanation;
       }, function() {
         btn.disabled = false;
-        container.innerHTML = '<div class="text-red-600 text-sm">Không thể kết nối đến máy chủ AI. Vui lòng thử lại sau.</div>';
+        container.innerHTML = '<div class="text-red-600 text-sm">Khong the ket noi den may chu AI. Vui long thu lai sau.</div>';
       });
     }
 

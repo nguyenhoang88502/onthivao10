@@ -36,11 +36,77 @@ var COL_SUBMISSION = {
 
 // ---------- WEB APP ENTRY POINT ----------
 function doGet(e) {
-  return HtmlService.createTemplateFromFile('Index')
+  if (e && e.parameter && e.parameter.action) {
+    return handleApiRequest_(e);
+  }
+
+  return getIndexTemplate_()
     .evaluate()
     .setTitle('Luyen thi vao 10 TPHCM - Tieng Anh')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
+}
+
+function getIndexTemplate_() {
+  try {
+    return HtmlService.createTemplateFromFile('index');
+  } catch (err) {
+    return HtmlService.createTemplateFromFile('Index');
+  }
+}
+
+// ---------- STATIC SITE API ENTRY POINT ----------
+function handleApiRequest_(e) {
+  var callback = e.parameter.callback || '';
+  var action = e.parameter.action || '';
+  var payload = parsePayload_(e.parameter.payload);
+  var result;
+
+  try {
+    switch (action) {
+      case 'getTests':
+        result = getTests();
+        break;
+      case 'getTestDetails':
+        result = getTestDetails(payload);
+        break;
+      case 'submitTest':
+        result = submitTest(payload || {});
+        break;
+      case 'callDeepSeekExplanation':
+        result = callDeepSeekExplanation(payload || {});
+        break;
+      default:
+        result = { error: true, message: 'Unknown API action: ' + action };
+    }
+  } catch (err) {
+    result = { error: true, message: 'Server error: ' + err.toString() };
+  }
+
+  return createApiResponse_(result, callback);
+}
+
+function parsePayload_(payload) {
+  if (!payload) return null;
+  try {
+    return JSON.parse(payload);
+  } catch (err) {
+    return payload;
+  }
+}
+
+function createApiResponse_(data, callback) {
+  var json = JSON.stringify(data);
+  var output = callback
+    ? callback.replace(/[^\w.$]/g, '') + '(' + json + ');'
+    : json;
+  var mimeType = callback
+    ? ContentService.MimeType.JAVASCRIPT
+    : ContentService.MimeType.JSON;
+
+  return ContentService
+    .createTextOutput(output)
+    .setMimeType(mimeType);
 }
 
 // ---------- HELPER: Get or create sheet with headers ----------
@@ -274,6 +340,7 @@ function callDeepSeekExplanation(questionData) {
     var questionText = questionData.question_text || '';
     var studentAnswer = questionData.student_answer || '(Khong tra loi)';
     var correctAnswer = questionData.correct_answer || '';
+    var customQuestion = (questionData.custom_question || '').trim();
     var optionLabels = [];
     if (questionData.option_a) optionLabels.push('A. ' + questionData.option_a);
     if (questionData.option_b) optionLabels.push('B. ' + questionData.option_b);
@@ -283,6 +350,7 @@ function callDeepSeekExplanation(questionData) {
 
     var systemPrompt = 'Em la mot giao vien tieng Anh than thien, giau kinh nghiem luyen thi vao lop 10 tai TP.HCM. Nhiem vu cua em la giai thich can ke, de hieu bang tieng Viet cho hoc sinh.\n\n' +
       'Khi giai thich mot cau hoi trac nghiem tieng Anh, em hay:\n' +
+      '0. Neu hoc sinh co cau hoi rieng ve cau nay, hay tra loi cau hoi do truoc mot cach ro rang, sau do moi quay lai giai thich cau goc.\n' +
       '1. Dich nghia cau hoi va cac dap an sang tieng Viet.\n' +
       '2. Phan tich ngu phap hoac tu vung lien quan den cau hoi.\n' +
       '3. Giai thich tai sao dap an dung (' + correctAnswer + ') la chinh xac.\n' +
@@ -292,6 +360,7 @@ function callDeepSeekExplanation(questionData) {
       'Dinh dang cau tra loi bang HTML don gian (dung <p>, <strong>, <em>, <ul>, <li>) de hien thi dep tren web.';
 
     var userMessage = 'Cau hoi: ' + questionText + '\n\n' +
+      (customQuestion ? 'Cau hoi rieng cua hoc sinh: ' + customQuestion + '\n\n' : '') +
       (optionsText ? 'Cac dap an:\n' + optionsText + '\n\n' : '') +
       'Dap an hoc sinh chon: ' + studentAnswer + '\n' +
       'Dap an dung: ' + correctAnswer + '\n\n' +
