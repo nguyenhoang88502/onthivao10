@@ -5,7 +5,7 @@
 
 // ---------- CONFIGURATION ----------
 var CONFIG = {
-  SPREADSHEET_ID: 'YOUR_SPREADSHEET_ID_HERE',
+  SPREADSHEET_ID: '1J6cnzgyFCvXfeHS9pNlzNQUaQb61g7fo_I1DQlUhSrI',
   DEEPSEEK_API_URL: 'https://api.deepseek.com/v1/chat/completions',
   DEEPSEEK_MODEL: 'deepseek-chat',
   TIME_LIMIT_MINUTES: 90,
@@ -340,7 +340,6 @@ function callDeepSeekExplanation(questionData) {
     var questionText = questionData.question_text || '';
     var studentAnswer = questionData.student_answer || '(Khong tra loi)';
     var correctAnswer = questionData.correct_answer || '';
-    var customQuestion = (questionData.custom_question || '').trim();
     var optionLabels = [];
     if (questionData.option_a) optionLabels.push('A. ' + questionData.option_a);
     if (questionData.option_b) optionLabels.push('B. ' + questionData.option_b);
@@ -350,7 +349,6 @@ function callDeepSeekExplanation(questionData) {
 
     var systemPrompt = 'Em la mot giao vien tieng Anh than thien, giau kinh nghiem luyen thi vao lop 10 tai TP.HCM. Nhiem vu cua em la giai thich can ke, de hieu bang tieng Viet cho hoc sinh.\n\n' +
       'Khi giai thich mot cau hoi trac nghiem tieng Anh, em hay:\n' +
-      '0. Neu hoc sinh co cau hoi rieng ve cau nay, hay tra loi cau hoi do truoc mot cach ro rang, sau do moi quay lai giai thich cau goc.\n' +
       '1. Dich nghia cau hoi va cac dap an sang tieng Viet.\n' +
       '2. Phan tich ngu phap hoac tu vung lien quan den cau hoi.\n' +
       '3. Giai thich tai sao dap an dung (' + correctAnswer + ') la chinh xac.\n' +
@@ -360,7 +358,6 @@ function callDeepSeekExplanation(questionData) {
       'Dinh dang cau tra loi bang HTML don gian (dung <p>, <strong>, <em>, <ul>, <li>) de hien thi dep tren web.';
 
     var userMessage = 'Cau hoi: ' + questionText + '\n\n' +
-      (customQuestion ? 'Cau hoi rieng cua hoc sinh: ' + customQuestion + '\n\n' : '') +
       (optionsText ? 'Cac dap an:\n' + optionsText + '\n\n' : '') +
       'Dap an hoc sinh chon: ' + studentAnswer + '\n' +
       'Dap an dung: ' + correctAnswer + '\n\n' +
@@ -372,8 +369,7 @@ function callDeepSeekExplanation(questionData) {
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userMessage }
       ],
-      temperature: 0.7,
-      max_tokens: 1500
+      temperature: 0.7
     };
 
     var response = UrlFetchApp.fetch(CONFIG.DEEPSEEK_API_URL, {
