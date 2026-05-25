@@ -500,7 +500,8 @@
         return;
       }
       grid.innerHTML = tests.map(function(t) {
-        return '<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-primary-200 transition-all group" data-test-id="' + t.test_id + '">' +
+        var testId = String(t.test_id || '');
+        return '<div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md hover:border-primary-200 transition-all group" data-test-id="' + escapeHtml(testId) + '">' +
           '<div class="flex items-start justify-between mb-3">' +
             '<h3 class="font-bold text-gray-800 text-lg group-hover:text-primary-600 transition">' + escapeHtml(t.title) + '</h3>' +
             '<span class="text-xs bg-primary-50 text-primary-700 px-2 py-1 rounded-full font-medium whitespace-nowrap ml-2">' + (t.time_limit || 90) + ' phút</span>' +
@@ -508,7 +509,7 @@
           '<p class="text-sm text-gray-500 mb-4 line-clamp-2">' + escapeHtml(t.description) + '</p>' +
           '<div class="flex items-center justify-between">' +
             '<span class="text-xs text-gray-400">40 câu · 4 phần · 10 điểm</span>' +
-            '<button onclick="startTest(' + t.test_id + ')" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Bắt đầu</button>' +
+            '<button type="button" onclick=\'startTest("' + escapeHtml(testId) + '")\' class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">Bắt đầu</button>' +
           '</div>' +
         '</div>';
       }).join('');
